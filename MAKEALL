@@ -664,6 +664,20 @@ build_target() {
 
 	${CROSS_COMPILE}size ${OBJS} | tee -a ${LOG_DIR}/$target.MAKELOG
 
+	BIN=${output_dir}/u-boot.bin
+	if [ -e ${output_dir}/spl/u-boot-spl.bin ]; then
+		BIN="${BIN} ${output_dir}/spl/u-boot-spl.bin"
+	fi
+	if [ -e ${output_dir}/tpl/u-boot-tpl.bin ]; then
+		BIN="${BIN} ${output_dir}/spl/u-boot-spl.bin"
+	fi
+	if [ -e ${output_dir}/u-boot-nand.bin ]; then
+		BIN="${BIN} ${output_dir}/u-boot-nand.bin"
+	fi
+	BIN="${BIN} ${output_dir}/examples/standalone/hello_world.bin"
+
+	md5sum ${BIN}
+
 	if [ $BUILD_MANY == 1 ] ; then
 		trap - TERM
 
