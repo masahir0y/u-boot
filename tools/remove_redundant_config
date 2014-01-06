@@ -1,0 +1,66 @@
+#!/bin/sh
+
+CPU=ppc4xx
+CONFIG=CONFIG_4xx
+TMPDIR=/tmp/tmp
+
+rm -rf /tmp/tmp
+mkdir /tmp/tmp
+
+while read line
+do
+	# skip comments
+	if echo $line | grep -q '^#'; then
+		continue
+	fi
+
+	# skip empty lines
+	if [ -z "$line" ]; then
+		continue
+	fi
+
+	set $line
+
+	if [ "$3" != "$CPU" ]; then
+		continue
+	fi
+
+	target=$7
+	CONFIG_NAME=$target
+
+	[ $# -gt 7 ] && [ "$8" != "-" ] && {
+	# check if we have a board config name in the options field
+	# the options field mave have a board config name and a list
+	# of options, both separated by a colon (':'); the options are
+	# separated by commas (',').
+	#
+	# Check for board name
+	tmp="${8%:*}"
+	if [ "$tmp" ] ; then
+		CONFIG_NAME="$tmp"
+	fi
+	# Check if we only have a colon...
+	if [ "${tmp}" != "$8" ] ; then
+		options=${8#*:}
+		TARGETS="`echo ${options} | sed 's:,: :g'` ${TARGETS}"
+	fi
+	}
+	printf "CPU: %s; Target: %-30s; Config: %-30s" $CPU $target $CONFIG_NAME
+
+	config=$CONFIG_NAME.h
+
+	if [ -r $TMPDIR/$config ]; then
+		echo " - "
+		continue
+	fi
+
+	cp include/configs/$config $TMPDIR
+	cat $TMPDIR/$config | sed '/^#define[[:blank:]]*'$CONFIG'[[:blank:]]/d' > include/configs/$config
+
+	if cmp -s $TMPDIR/$config include/configs/$config ; then
+		echo "not modify"
+	else
+		echo "modify"
+	fi
+
+done < boards.cfg
