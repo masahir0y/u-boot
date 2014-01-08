@@ -1,0 +1,23 @@
+#!/bin/sh
+
+__grep ()
+{
+    find \( -name .git -o -name .svn -o -name CVS -o -name build \) -prune -o ! \( -name GPATH -o -name GRTAGS -o -name GSYMS -o -name GTAGS -o -name vmlinux -o -name Image -o -name zImage -o -name uImage -o -name "*.[ao]" -o -name "*.so" -o -name "*.cmd" -o -name "*.ko" -o -name "*.bin" -o -name "*~" -o -name "#*#" \) -type f -print | xargs grep "$@"
+}
+
+for f in $(find . -name '*.h')
+do
+	dir=$(dirname $f)
+	base=$(basename $f)
+	base2=$(basename $f .h)
+	if [ "$dir" = "./include/configs" ]; then
+		if grep -q " $base2[ :]" boards.cfg; then
+			continue
+		fi
+	fi
+	if [ -n "$(__grep $base | grep '#[[:blank:]]*include')" ]; then
+		continue
+	fi
+
+	echo $f
+done
