@@ -63,6 +63,7 @@ extern void __iomem *sg_base;
 #define SG_MEMCONF_SPARSEMEM		(0x1 << 4)
 
 #define SG_USBPHYCTRL		0x0500
+#define SG_ETPINMODE		0x0540
 #define SG_ETPHYPSHUT		0x0554
 #define SG_ETPHYCNT		0x0550
 
