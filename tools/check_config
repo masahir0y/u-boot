@@ -1,0 +1,125 @@
+#!/bin/sh
+# Print all config macros for specified board
+#
+# Usage: tools/getconfigs <board>
+
+# Specify your favoriate cross tools
+CROSS_COMPILE_ARC=arc-linux-
+CROSS_COMPILE_AARCH64=aarch64-linux-gnu-
+CROSS_COMPILE_ARM=arm-unknown-linux-gnueabi-
+CROSS_COMPILE_AVR32=avr32-linux-
+CROSS_COMPILE_BLACKFIN=bfin-elf-
+CROSS_COMPILE_M68K=m68k-linux-
+CROSS_COMPILE_MICROBLAZE=microblaze-linux-
+CROSS_COMPILE_MIPS=mips-linux-
+CROSS_COMPILE_NDS32=nds32le-linux-
+CROSS_COMPILE_NIOS2=nios2-linux-
+CROSS_COMPILE_OPENRISC=or32-linux-
+CROSS_COMPILE_POWERPC=powerpc-linux-
+CROSS_COMPILE_SH=sh4-gentoo-linux-gnu-
+CROSS_COMPILE_SPARC=sparc-elf-
+CROSS_COMPILE_X86=i386-linux-
+
+config_list="CONFIG_MX35 CONFIG_MX25 CONFIG_MX27 CONFIG_MB86R0x CONFIG_MX53 CONFIG_MX51"
+
+if [ ! -r boards.cfg ]; then
+	echo >&2 "boards.cfg: not found"
+	echo >&2 "Run \"tools/check_config <target_board>\" at the top directory"
+	echo >&2 "Exit."
+	exit 1
+fi
+
+
+get_arch() {
+	local target=$1
+
+	awk '$7 == "'$target'" { print $2 }' boards.cfg
+}
+
+make_autoconf () {
+	board=$1
+
+	arch=$(get_arch $board)
+
+	if [ -z "$arch" ]; then
+		echo >&2 "$target: target board not found in boards.cfg"
+		echo >&2 "Exit."
+		exit 3
+	fi
+
+	ARCH=$(echo $arch | tr '[:lower:]' '[:upper:]')
+
+	eval CROSS_COMPILE=\$CROSS_COMPILE_$ARCH
+
+	export CROSS_COMPILE
+
+	rm -f include/autoconf.mk
+
+	make ${board}_config include/autoconf.mk >/dev/null || { \
+		echo >&2 "make failed."
+		echo >&2 "Please check if CROSS_COMPILE_<ARCH> is correctly set."
+		echo >&2 "Exit."
+		exit 4
+	}
+
+	if [ ! -f include/autoconf.mk ]; then
+		echo >&2 "include/autoconf.mk: not found."
+		echo >&2 "Internal error."
+		echo >&2 "Exit."
+		exit 5
+	fi
+}
+
+
+check_board () {
+	board=$1
+
+	printf '%-30s' $board
+
+	make_autoconf $board
+
+	#echo $all_config
+
+	for config in $config_list
+	do
+		#printf '%-20s' $config
+		res=$(cat include/autoconf.mk | sed -ne "s/^$config=\(.*\)/\1/p")
+
+		printf '%-16s' $res
+	done
+	echo
+}
+
+
+printf '%-30s'
+for config in $config_list
+do
+	printf '%-16s' $config
+done
+echo
+
+while read line
+do
+	# skip comments
+	if echo $line | grep -q '^#'; then
+		continue
+	fi
+
+	# skip empty lines
+	if [ -z "$line" ]; then
+		continue
+	fi
+
+	set $line
+
+	board=$7
+
+	check_board $board
+done < boards.cfg
+
+
+
+
+
+
+exit 0
