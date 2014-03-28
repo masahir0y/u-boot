@@ -1,0 +1,30 @@
+#!/bin/sh
+
+__grep ()
+{
+    find \( -name .git -o -name .svn -o -name CVS -o -name build \) -prune -o ! \( -name GPATH -o -name GRTAGS -o -name GSYMS -o -name GTAGS -o -name vmlinux -o -name Image -o -name zImage -o -name uImage -o -name "*.[ao]" -o -name "*.so" -o -name "*.cmd" -o -name "*.ko" -o -name "*.bin" -o -name "*~" -o -name "#*#" \) -type f -print | xargs grep "$@"
+}
+
+for f in $(find . -name '*.[cS]')
+do
+	dir=$(dirname $f)
+	base=$(basename $f .c)
+	base=$(basename $base .S)	
+
+#	echo "$dir, $base"
+
+	if [ "$f" = asm-offsets.c ]; then
+		continue;
+	fi
+
+	if [ ! -r $dir/Makefile ]; then
+		echo "$f  (Makefile missing)"
+		continue;
+	fi
+
+	if ! grep -q "$base.o" $dir/Makefile; then
+	     	  echo $f	  	
+	fi
+
+
+done
