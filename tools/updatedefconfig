@@ -1,0 +1,30 @@
+#!/bin/sh
+
+all_defconfig="$(cd configs; ls)"
+
+for i in $all_defconfig
+do
+	echo "updating $i"
+
+	rm -f defconfig spl/defconfig tpl/defconfig
+
+	make $i
+
+	make savedefconfig
+
+	if [ ! -f defconfig ]; then
+		echo "error"
+		exit 1;
+	fi
+
+	cp defconfig configs/$i
+
+	if [ -f spl/defconfig ]; then
+		cp spl/defconfig configs/spl/$i
+	fi
+
+	if [ -f tpl/defconfig ]; then
+		cp tpl/defconfig configs/tpl/$i
+	fi
+
+done
