@@ -1,0 +1,77 @@
+#!/bin/sh
+
+# directories with the following names are omitted from search.
+OMIT_DIR="-name .git -prune -or -name build -prune -or -name doc -or"
+
+TMP_FILE=/tmp/tmp$$
+
+#usage: sub_func TARGET_DIR
+sub_func(){
+
+	FIRST_FILE=true
+
+	find $1 $OMIT_DIR -type f -and -print |
+	while read _FILE; do
+
+		if nkf --guess $_FILE | grep -q BINARY; then
+			if ! $FIRST_FILE; then
+				echo
+			fi
+			echo -n "$_FILE is binary. skipped."
+			PRINT_DOT=false
+		elif echo $_FILE | grep -q -e "\.bin$" -e "\.[ao]$"; then
+			if ! $FIRST_FILE; then
+				echo
+			fi
+			echo -n "$_FILE skipped."
+			PRINT_DOT=false
+		elif test -s $_FILE; then # _FILE is not empty
+			sed -f tools/scripts.sed $_FILE > $TMP_FILE
+			
+			if cmp -s $_FILE $TMP_FILE; then # TMP_FILE is not different from _FILE
+				if ! $FIRST_FILE && ! $PRINT_DOT ; then
+					echo
+				fi
+				echo -n .
+				PRINT_DOT=true
+			else
+				if ! $FIRST_FILE; then
+					echo
+				fi
+
+				if test -s $TMP_FILE; then # TMP_FILE is not empty
+					cp $TMP_FILE $_FILE
+					echo -n "$_FILE editted."
+				else
+					echo -n "An empty file produced from $_FILE - check your sed script."
+				fi
+				
+				PRINT_DOT=false
+			fi
+			rm -f $TMP_FILE
+		else
+			if ! $FIRST_FILE; then
+				echo
+			fi
+			echo -n "$_FILE is empty. skipped."
+			PRINT_DOT=false
+		fi
+
+		FIRST_FILE=false
+	done
+
+	echo
+
+	return 0
+}
+
+if [ $# -gt 0 ] ; then
+	while [ $# -gt 0 ] ; do
+		sub_func $1
+		shift
+	done
+else
+	sub_func .
+fi
+
+exit 0
