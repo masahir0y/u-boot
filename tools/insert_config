@@ -1,0 +1,27 @@
+#!/bin/sh
+
+SOC=davinci
+CONFIG="CONFIG_ARCH_DAVINCI=y"
+KEYWORD="CONFIG_ARM"
+
+boards=$(awk '$4 == "'$SOC'" { print $7 }' boards.cfg)
+
+edit () {
+	f=$1
+
+	if [ -f $f ]; then
+		echo editting $f
+
+		if grep -q "CONFIG_SPL=y" $f; then
+			sed '/'$KEYWORD'/a+S:'$CONFIG $f > tmp
+		else
+			sed '/'$KEYWORD'/a'$CONFIG $f > tmp
+		fi
+		mv tmp $f
+	fi
+}
+
+for b in $boards
+do
+	edit configs/${b}_defconfig
+done
