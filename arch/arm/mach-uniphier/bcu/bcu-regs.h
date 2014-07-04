@@ -27,4 +27,7 @@
 #define	BCIPPCCHR4		(BCIPPCCHR(4))
 #define	BCIPPCCHR5		(BCIPPCCHR(5))
 
+/* only for sLD3 */
+#define BC0PCR          (BCU_BASE + 0x3000)
+
 #endif  /* ARCH_BCU_REGS_H */

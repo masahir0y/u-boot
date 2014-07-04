@@ -14,6 +14,8 @@
 
 int uniphier_sld3_init(const struct uniphier_board_data *bd)
 {
+	int ret;
+
 	uniphier_sld3_bcu_init(bd);
 
 	uniphier_sbc_init_admulti(bd);
@@ -42,6 +44,10 @@ int uniphier_sld3_init(const struct uniphier_board_data *bd)
 #endif
 
 	led_puts("L4");
+
+	ret = uniphier_sld3_umc_init(bd);
+	if (ret)
+		return ret;
 
 	led_puts("L5");
 
