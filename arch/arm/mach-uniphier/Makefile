@@ -6,6 +6,7 @@ ifdef CONFIG_SPL_BUILD
 
 obj-y += init/ bcu/ memconf/
 obj-$(CONFIG_MICRO_SUPPORT_CARD) += sbc/
+obj-$(CONFIG_ARCH_UNIPHIER_SLD3) += ph1-sld3/
 
 else
 

@@ -90,6 +90,10 @@
 #define SG_PINMON0_CLK_MODE_AXOSEL_20480KHZ	(0x2 << 16)
 #define SG_PINMON0_CLK_MODE_AXOSEL_25000KHZ_A	(0x3 << 16)
 
+#define SG_EFUSEMON0				(SG_DBG_BASE | 0x0110)
+#define SG_EFUSEMON1				(SG_DBG_BASE | 0x0114)
+#define SG_EFUSEMON2				(SG_DBG_BASE | 0x0118)
+
 #ifdef __ASSEMBLY__
 
 	.macro	sg_set_pinsel, pin, muxval, mux_bits, reg_stride, ra, rd

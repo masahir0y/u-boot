@@ -17,9 +17,17 @@
 #define SC_BASE_ADDR			0x61840000
 #endif
 
+#define SC_CPLLOSCCTL			(SC_BASE_ADDR | 0x1104)
+#define SC_CPLLOSCCTL_CPLLST		(0x1 << 1)
+#define SC_CPLLOSCCTL_CPLLEN		(0x1 << 0)
+
 #define SC_DPLLOSCCTRL			(SC_BASE_ADDR | 0x1110)
 #define SC_DPLLOSCCTRL_DPLLST		(0x1 << 1)
 #define SC_DPLLOSCCTRL_DPLLEN		(0x1 << 0)
+
+#define SC_APLLAOSCCTRL			(SC_BASE_ADDR | 0x1158)
+
+#define SC_CPLLCTRL			(SC_BASE_ADDR | 0x11FC)
 
 #define SC_DPLLCTRL			(SC_BASE_ADDR | 0x1200)
 #define SC_DPLLCTRL_SSC_EN		(0x1 << 31)
@@ -98,5 +106,18 @@
 #define SC_IRQTIMSET			(SC_BASE_ADDR | 0x3000)
 #define SC_SLFRSTSEL			(SC_BASE_ADDR | 0x3010)
 #define SC_SLFRSTCTL			(SC_BASE_ADDR | 0x3014)
+
+#if defined(CONFIG_ARCH_UNIPHIER_SLD3)
+/* System clock gear set value register */
+#define SC_SYSCLKSET			(SC_BASE_ADDR | 0x8004)
+#define SC_SYSCLKSET_GEAR1		0x1
+#define SC_SYSCLKSET_GEAR2		0x2
+
+/* System clock gear update register */
+#define SC_SYSCLKUPD			(SC_BASE_ADDR | 0x8008)
+#define SC_SYSCLKUPD_CLKUPDATE_MASK	0x1
+#define SC_SYSCLKUPD_CLKUPDATE_EXEC	0x1
+#define SC_SYSCLKUPD_CLKUPDATE_READY	0x0
+#endif
 
 #endif /* ARCH_SC_REGS_H */
