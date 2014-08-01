@@ -644,7 +644,12 @@ build_target() {
 		MAKE="${MAKE} O=${output_dir}"
 	fi
 
-	${MAKE} mrproper >/dev/null
+	${MAKE} clean >/dev/null
+	rm -f ${output_dir}/.config
+	rm -f ${output_dir}/include/config/auto.conf
+	rm -f ${output_dir}/include/autoconf.mk
+	rm -rf ${output_dir}/spl
+	rm -rf ${output_dir}/tpl
 
 	echo "Building ${target} board..."
 	${MAKE} -s ${target}_defconfig >/dev/null
