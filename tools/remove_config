@@ -1,0 +1,21 @@
+#!/bin/sh
+
+SOC=tegra124
+CONFIG="CONFIG_SPL=y"
+
+boards=$(awk '$4 == "'$SOC'" { print $7 }' boards.cfg)
+
+edit () {
+	f=$1
+
+	if [ -f $f ]; then
+		echo editting $f
+		sed '/'$CONFIG'/d' $f > tmp
+		mv tmp $f
+	fi
+}
+
+for b in $boards
+do
+	edit configs/${b}_defconfig
+done
