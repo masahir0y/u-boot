@@ -126,7 +126,7 @@ F:	arch/arm/cpu/armv7/s5p-common/
 F:	arch/arm/include/asm/arch-s3c24x0/
 
 ARM STM SPEAR
-M:	Vipin Kumar <vipin.kumar@st.com>
+#M:	Vipin Kumar <vipin.kumar@st.com>
 S:	Maintained
 T:	git git://git.denx.de/u-boot-stm.git
 F:	arch/arm/cpu/arm926ejs/spear/
