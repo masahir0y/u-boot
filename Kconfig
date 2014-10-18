@@ -169,6 +169,24 @@ config TPL
 	help
 	  If you want to build TPL as well as the normal image and SPL, say Y.
 
+config SYS_TEXT_BASE
+	hex "Text Base"
+	depends on TEXT_BASE_IN_KCONFIG
+
+config TEXT_BASE_IN_KCONFIG
+	bool "Specify CONFIG_SYS_TEXT_BASE in Kconfig"
+	help
+	  This option allows to set CONFIG_SYS_TEXT_BASE in Kconfig.
+	  Historically, configuration options including CONFIG_SYS_TEXT_BASE
+	  were defined in header files.  We are moving them to Kconfig
+	  but it seems difficult to move all the definitions at one time.
+
+	  How to migrate:
+	  Move CONFIG_SYS_TEXT_BASE to the defconfig with
+	  CONFIG_TEXT_BASE_IN_KCONFIG enabled so as not to disturb the other
+	  boards defining it in header files.
+	  After completing the move, this option will be removed.
+
 config FIT
 	bool "Support Flattened Image Tree"
 	help
