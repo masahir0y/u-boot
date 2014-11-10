@@ -76,7 +76,7 @@
 #endif
 
 #ifndef CONFIG_SYS_PROMPT
-#define CONFIG_SYS_PROMPT	"=> "
+#define CONFIG_SYS_PROMPT	CONFIG_PROMPT
 #endif
 
 #ifndef CONFIG_SYS_PBSIZE
