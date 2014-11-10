@@ -6,7 +6,7 @@
  */
 #include <config.h>
 
-#if defined(CONFIG_4xx) && defined(CONFIG_CMD_SETGETDCR)
+#if defined(CONFIG_CMD_SETGETDCR)
 
 #include <asm/ppc4xx.h>
 
