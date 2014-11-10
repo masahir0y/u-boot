@@ -5,9 +5,6 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 #include <config.h>
-
-#if defined(CONFIG_CMD_SETGETDCR)
-
 #include <asm/ppc4xx.h>
 
 #include <ppc_asm.tmpl>
@@ -177,4 +174,3 @@ set_dcr:
 		blr				/* Return to calling function */
 .Lfe4:		.size	set_dcr,.Lfe4-set_dcr
 /* end set_dcr() */
-#endif

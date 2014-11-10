@@ -9,7 +9,7 @@ extra-y	:= resetvec.o
 extra-y	+= start.o
 
 obj-y	:= cache.o
-obj-y	+= dcr.o
+obj-$(CONFIG_CMD_SETGETDCR)	+= dcr.o
 obj-y	+= kgdb.o
 
 obj-y	+= 40x_spd_sdram.o
