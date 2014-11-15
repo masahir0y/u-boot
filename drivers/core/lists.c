@@ -22,12 +22,10 @@
 
 struct driver *lists_driver_lookup_name(const char *name)
 {
-	struct driver *drv =
-		ll_entry_start(struct driver, driver);
-	const int n_ents = ll_entry_count(struct driver, driver);
-	struct driver *entry;
+	struct driver *entry = ll_entry_start(struct driver, driver);
+	struct driver *end = ll_entry_end(struct driver, driver);
 
-	for (entry = drv; entry != drv + n_ents; entry++) {
+	for (; entry < end; entry++) {
 		if (!strcmp(name, entry->name))
 			return entry;
 	}
@@ -38,12 +36,11 @@ struct driver *lists_driver_lookup_name(const char *name)
 
 struct uclass_driver *lists_uclass_lookup(enum uclass_id id)
 {
-	struct uclass_driver *uclass =
+	struct uclass_driver *entry =
 		ll_entry_start(struct uclass_driver, uclass);
-	const int n_ents = ll_entry_count(struct uclass_driver, uclass);
-	struct uclass_driver *entry;
+	struct uclass_driver *end = ll_entry_end(struct uclass_driver, uclass);
 
-	for (entry = uclass; entry != uclass + n_ents; entry++) {
+	for (; entry < end; entry++) {
 		if (entry->id == id)
 			return entry;
 	}
@@ -53,15 +50,15 @@ struct uclass_driver *lists_uclass_lookup(enum uclass_id id)
 
 int lists_bind_drivers(struct udevice *parent, bool pre_reloc_only)
 {
-	struct driver_info *info =
+	struct driver_info *entry =
 		ll_entry_start(struct driver_info, driver_info);
-	const int n_ents = ll_entry_count(struct driver_info, driver_info);
-	struct driver_info *entry;
+	struct driver_info *end =
+		ll_entry_end(struct driver_info, driver_info);
 	struct udevice *dev;
 	int result = 0;
 	int ret;
 
-	for (entry = info; entry != info + n_ents; entry++) {
+	for (; entry < end; entry++) {
 		ret = device_bind_by_name(parent, pre_reloc_only, entry, &dev);
 		if (ret && ret != -EPERM) {
 			dm_warn("No match for driver '%s'\n", entry->name);
@@ -128,10 +125,9 @@ static int driver_check_compatible(const struct udevice_id *of_match,
 int lists_bind_fdt(struct udevice *parent, ofnode node, struct udevice **devp,
 		   bool pre_reloc_only)
 {
-	struct driver *driver = ll_entry_start(struct driver, driver);
-	const int n_ents = ll_entry_count(struct driver, driver);
+	struct driver *entry = ll_entry_start(struct driver, driver);
+	struct driver *end = ll_entry_end(struct driver, driver);
 	const struct udevice_id *id;
-	struct driver *entry;
 	struct udevice *dev;
 	bool found = false;
 	const char *name, *compat_list, *compat;
