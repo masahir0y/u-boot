@@ -1,0 +1,10 @@
+config LIBFDT
+	bool "Compile libfdt"
+	help
+	  A utility library for reading and manipulating device tree binary
+	  files.  Imported from the DTC (Device Tree Compiler) project.
+
+	  In U-Boot, this library is used for
+	   - Updating the DTB passed to the kernel (CONFIG_OF_LIBFDT)
+	   - Configuring U-Boot itself via a DTB (CONFIG_OF_CONTROL)
+	   - Supporting the new uImage structure, FIT (CONFIG_FIT)
