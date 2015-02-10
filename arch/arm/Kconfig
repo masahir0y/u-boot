@@ -60,6 +60,9 @@ config SYS_CPU
         default "sa1100" if CPU_SA1100
 	default "armv8" if ARM64
 
+config USE_PRIVATE_LIBGCC
+	default y
+
 config SEMIHOSTING
 	bool "support boot from semihosting"
 	help
