@@ -186,6 +186,9 @@
 		"bootm $fit_addr\0" \
 	"nandboot=nand read $fit_addr_r $fit_addr $fit_size &&" \
 		"bootm $fit_addr_r\0" \
+	"nandlnxupdate=nand erase $fit_addr $fit_size &&" \
+		"tftpboot fitImage &&" \
+		"nand write $loadaddr $fit_addr $fit_size\0" \
 	"tftpboot=tftpboot $fit_addr_r $bootfile &&" \
 		"bootm $fit_addr_r\0" \
 	"__nfsboot=run tftpboot\0"
@@ -226,6 +229,15 @@
 		"nand read $ramdisk_addr_r $ramdisk_addr $ramdisk_size &&" \
 		"nand read $fdt_addr_r $fdt_addr $fdt_size &&" \
 		"run boot_common\0" \
+	"nandlnxupdate=nand erase $kernel_addr $kernel_size &&" \
+		"tftpboot $bootfile &&" \
+		"nand write $loadaddr $kernel_addr $kernel_size &&" \
+		"nand erase $ramdisk_addr $ramdisk_size &&" \
+		"tftpboot $ramdisk_file &&" \
+		"nand write $loadaddr $ramdisk_addr $ramdisk_size &&" \
+		"nand erase $fdt_addr $fdt_size &&" \
+		"tftpboot $fdt_file &&" \
+		"nand write $loadaddr $fdt_addr $fdt_size\0" \
 	"tftpboot=tftpboot $kernel_addr_r $bootfile &&" \
 		"tftpboot $ramdisk_addr_r $ramdisk_file &&" \
 		"tftpboot $fdt_addr_r $fdt_file &&" \
