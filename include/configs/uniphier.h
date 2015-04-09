@@ -127,7 +127,7 @@
 	"third_image=u-boot.bin\0"
 #endif
 
-#define CONFIG_BOOTCOMMAND		"run $bootmode"
+#define CONFIG_BOOTCOMMAND		"run tftpboot"
 
 #define CONFIG_ROOTPATH			"/nfs/root/path"
 #define CONFIG_NFSBOOTCOMMAND						\
