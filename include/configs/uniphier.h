@@ -167,7 +167,7 @@
 
 #define CONFIG_CMDLINE_EDITING		/* add command line history	*/
 
-#define CONFIG_BOOTCOMMAND		"run $bootmode"
+#define CONFIG_BOOTCOMMAND		"run tftpboot"
 
 #define CONFIG_ROOTPATH			"/nfs/root/path"
 #define CONFIG_NFSBOOTCOMMAND						\
