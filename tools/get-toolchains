@@ -1,0 +1,400 @@
+#!/usr/bin/env python3
+#
+# Author: Masahiro Yamada <yamada.masahiro@socionext.com>
+#
+# SPDX-License-Identifier:	GPL-2.0+
+#
+
+"""
+Get toolchains for U-boot.
+
+When we send patches, we are supposed to test them by build utilities
+such as MAKEALL, buildman.  When we want to test global changes, the
+first hurdle is, I think, to collect toolchains for all the architectures.
+
+We have some documents about build utilities, but I have not seen any
+official information about how to get the suitable cross-tools.
+Of course, it is possible to build them from sources, but it is not
+necessarily feasible.
+
+Fortunately, the kernel.org site provides us pre-built toolchains, but
+some architectures are missing.  Also, some boards fail to build with
+the kernel.org tools.  We sometimes see, "where can I get the compiler
+for this architecture?" things on the ML.  We should be able to prepare
+cross-compilers more easily.
+
+It is true that buildman provides --fetch-arch option for downloading
+kernel.org toolchains, but it does not have access to others.  And what
+we really want to know is most likely how to get compilers for such minor
+architectures as kernel.org does not provide.
+
+This tool intends to be more generic design without hard-coding such
+kernel.org things.
+
+To achieve that, this tool consists of two files:
+Python script (this file) and the database file containing URLs of tarballs.
+
+We just need to update the latter when new version compilers are released
+(or better compilers are found.)  The file is in the form of RFC 822 for
+easier editing.
+
+The script only uses Python libraries, not relies on external programs
+although it displays wget-like log when downloading tarballs.  :-)
+
+Usage
+-----
+
+Just run
+
+  $ tools/get-toolchains
+
+Tarballs will be downloaded, extracted, and installed for all the
+architectures.  Finally, settings that might be useful for shell
+and buildman will be displayed.
+
+You can pass architectures to the arguments if you only want to obtain
+particular toolchains.  For example, to get ARM and AARCH64 tools, do this:
+
+  $ tools/get-toolchains arm aarch64
+
+Options
+-------
+
+ -c, --config
+   Specify the custom database file.  If not specified, DEFAULT_CONFIG
+   (toolchains.cfg) is used.
+
+ -d, --destdir
+   Specify where to install the toolchains.  Tools are installed into
+   DEFAULT_DESTDIR (~/.u-boot-toolchains) by default, but you may wish
+   to install them under /opt, /usr/local/, or somewhere else.
+
+ -k, --keep-tarballs
+   Keep downloaded tarballs, which might be useful when you want to
+   re-install the tools (and then you should add -r (--reuse) option
+   for the next run.)  If this option is disabled, all the tarballs are
+   deleted after installation.
+
+ -r, --reuse
+   Allow to use local tarballs.  If a file with the same name is found
+   in the tarball directory, the tool skips downloading and use the
+   local one.  If disabled, it always downloads tarballs from URLs.
+
+To see the complete list of supported options, run
+
+  $ tools/get-toolchains
+"""
+
+import configparser
+import errno
+import optparse
+import os
+import platform
+import shutil
+import sys
+import tarfile
+import tempfile
+import time
+import urllib.request
+
+DEFAULT_CONFIG = 'toolchains.cfg'
+DEFAULT_DESTDIR = '~/.u-boot-toolchains'
+
+assert sys.version_info >= (3, 3, 0), \
+       'This script only works on Python 3.3 or later.  Exit.'
+
+def rmfile(file):
+    """Remove a file ignoring 'No such file or directory' error."""
+    try:
+        os.remove(file)
+    except OSError as exception:
+        # Ignore 'No such file or directory' error
+        if exception.errno != errno.ENOENT:
+            raise
+
+def mkdir(dir):
+    """Make a directory ignoring 'File exists' error."""
+    try:
+        os.makedirs(dir)
+    except OSError as exception:
+        # throw errors other than 'File exists'
+        if exception.errno != errno.EEXIST:
+            raise
+
+def format_size(size):
+    size = float(size)
+    if size > 1024 * 1024 * 1024:
+        size /= 1024 * 1024 * 1024
+        unit = 'G'
+    elif size > 1024 * 1024:
+        size /= 1024 * 1024
+        unit = 'M'
+    elif size > 1024:
+        size /= 1024
+        unit = 'K'
+
+    return '%.2f%s' % (size, unit)
+
+def format_time(sec):
+    sec = int(sec)
+    if sec > 99:
+        min = sec // 60
+        sec = sec % 60
+        return '%dm %2ds' % (min, sec)
+    else:
+        return '%2ds' % sec
+
+def parse_config(config_file):
+    """Parse config file and return dictionary of URLs.
+    """
+    config = configparser.SafeConfigParser()
+    read_files = config.read(config_file)
+
+    if not read_files:
+        sys.exit('%s: config file not found' % config_file)
+
+    host_arch = platform.machine()
+
+    if not host_arch:
+        sys.exit('failed to get host architecture')
+
+    section = 'host "%s"' % host_arch
+
+    if not config.has_section(section):
+        sys.exit('%s: unsupported host architecture' % host_arch)
+
+    urls = {}
+
+    for arch, url in config.items(section):
+        if not arch.startswith('alias_'):
+            urls[arch] = url
+
+    return urls
+
+class Downloader:
+    """Tarball downloader."""
+    def __init__(self, arch_urls, tarball_dir, reuse):
+        self.arch_urls = arch_urls
+        self.tarball_dir = tarball_dir
+        self.reuse = reuse
+        mkdir(tarball_dir)
+
+    def __del__(self):
+        if hasattr(self, 'tempfile'):
+            rmfile(self.tempfile)
+
+    def download_one_url(self, url, dest):
+        """Download one tarball.
+
+        Arguments:
+          url: URL of tarball to be downloaded
+          dest: downloaded file is saved into this path
+        """
+        chunk = 256 * 1024
+
+        print('Download %s' % url)
+
+        if self.reuse and os.path.exists(dest):
+            print('local file found at %s.  skip downloading.' % dest)
+            return
+
+        print('Connecting ... ', end=' ')
+        response = urllib.request.urlopen(url)
+        print('connected')
+
+        file_size = response.headers.get('content-length')
+
+        if file_size:
+            file_size = int(file_size)
+        else:
+            file_size = 0
+
+        if file_size:
+            print('Length: %d' % file_size)
+        else:
+            print('Length: Unknown')
+
+        done = 0
+
+        (fd, self.tempfile) = tempfile.mkstemp()
+
+        start_time = time.time()
+
+        self.show_progress(done, file_size, 0)
+
+        with os.fdopen(fd, 'wb') as f:
+            while True:
+                data = response.read(chunk)
+                if not data:
+                    break
+                f.write(data)
+                done += len(data)
+                self.show_progress(done, file_size, time.time() - start_time)
+
+        print()
+
+        shutil.move(self.tempfile, dest)
+
+    def download_archs(self, archs):
+        """Download tarballs for given architectures.
+
+        Arguments:
+          archs: List of architectures.  If empty, download all the
+                 available tarballs.
+        """
+        # if not specified, download all the archs we know
+        if len(archs) == 0:
+            archs = self.arch_urls.keys()
+
+        arch_tarballs = {}
+
+        for arch in archs:
+            if arch not in self.arch_urls:
+                print('%s: URL not defined for this architecture. skip.' % arch,
+		file=sys.stderr)
+                continue
+            url = self.arch_urls[arch]
+            dest = os.path.join(self.tarball_dir, os.path.basename(url))
+            self.download_one_url(url, dest)
+            arch_tarballs[arch] = dest
+
+        return arch_tarballs
+
+    def show_progress(self, done, file_size, time):
+        """Display wget-like log.
+
+        done: downloaded size
+        file_size: total size
+        time: elapsed time
+        """
+        # just init and return for the first call
+        if done == 0:
+            self.prev_done = done
+            self.prev_time = time
+            return
+
+        width = shutil.get_terminal_size().columns
+        width -= 35
+        width -= len('%d' % file_size)
+
+        percent = 100 * done // file_size
+        arrow_length = width * done // file_size
+        arrow_length = max((arrow_length, 1))
+        speed = (done - self.prev_done) / (time - self.prev_time)
+        eta = time * (file_size - done) / done
+
+        msg = ('%2d%% ' % percent)[:4]
+        msg += '[' + '=' * (arrow_length - 1) + '>' + ' ' * (width - arrow_length) + ']'
+        msg += ' %-9d' % done
+        msg += ' %7s/s ' % format_size(speed)
+        if done == file_size:
+            msg += '   in %-6s ' % format_time(time)
+        else:
+            msg += '  eta %-6s ' % format_time(eta)
+
+        print('\r' + msg, end='', flush=True)
+
+        # remember the last done and time
+        self.prev_done = done
+        self.prev_time = time
+
+def get_bin_path(names):
+    while True:
+        stem = os.path.commonprefix(names)
+        if stem[-1] == '/':
+            return stem + 'bin'
+        names.remove(stem)
+
+def unpack_one_tarball(path, dest):
+    # caution: only Python 3.3 or later can handle .xz
+    with tarfile.open(path) as tar:
+        tar.extractall(dest)
+        bin_path = get_bin_path(tar.getnames())
+
+    return os.path.join(dest, bin_path)
+
+def unpack_tarballs(tarballs, destdir):
+    """
+    Arguments:
+      tarballs: Dictionary of tarball paths
+      destdir: Destination directory for installation
+    """
+    print()
+    paths = {}
+
+    for arch, tarball in tarballs.items():
+        dest = os.path.join(destdir, arch)
+        print('Unpacking %s into %s ... ' % (os.path.basename(tarball), dest),
+              end='', flush=True)
+        paths[arch] = os.path.realpath(unpack_one_tarball(tarball, dest))
+        print('done')
+
+    return paths
+
+def print_tool_settings(paths):
+    """Print settings for bash and buildman.
+
+    Arguments:
+      paths: Dictionary of toolchains paths.
+    """
+    print('\n\nAdd the followings to your ~/.(bash_)profile if necessary\n')
+    for (arch, path) in sorted(paths.items()):
+        print('PATH=%s:$PATH' % path)
+
+    print('\n\nAdd the followings to your ~/.buildman if necessary\n')
+    print('[toolchain]')
+    for (arch, path) in sorted(paths.items()):
+        print('%s: %s' % (arch, path))
+
+def get_toolchains(options, args):
+    """
+    Arguments:
+      options: Option flags.
+      args: List of architectures.  If empty, download and install
+            all the available toolchians.
+    """
+    if options.config:
+        config_file = options.config
+    else:
+        config_file = os.path.join(os.path.dirname(__file__), DEFAULT_CONFIG)
+
+    if options.destdir:
+        destdir = options.destdir
+    else:
+        destdir = DEFAULT_DESTDIR
+
+    destdir = os.path.expanduser(destdir)
+    tarball_dir = os.path.join(destdir, 'Tarballs')
+
+    urls = parse_config(config_file)
+
+    downloader = Downloader(urls, tarball_dir, options.reuse)
+
+    tarballs = downloader.download_archs(args)
+
+    paths = unpack_tarballs(tarballs, destdir)
+
+    print_tool_settings(paths)
+
+    if not options.keep_tarballs:
+        shutil.rmtree(tarball_dir)
+
+def main():
+    parser = optparse.OptionParser()
+    # Add options here
+
+    parser.add_option('-c', '--config', type='string',
+                      help='custom config_file')
+    parser.add_option('-d', '--destdir', type='string',
+                      help='custom config_file')
+    parser.add_option('-k', '--keep-tarballs', action='store_true',
+                       default=False,
+                       help='keep downloaded tarballs after installation')
+    parser.add_option('-r', '--reuse', action='store_true', default=False,
+                       help='use locally existing tarballs if available')
+    (options, args) = parser.parse_args()
+
+    get_toolchains(options, args)
+
+if __name__ == '__main__':
+    main()
