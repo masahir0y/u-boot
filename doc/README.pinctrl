@@ -1,0 +1,15 @@
+PINCTRL (PIN CONTROL) subsystem
+This document outlines the pin control subsystem in U-Boot
+
+Design Policy
+=============
+
+- Deal with the same device tree interface as pinctrl drivers in Linux have.
+
+  Device Tree is a hardware description language, which is not specific to a
+  certain software project.  It allows us to import device trees from other
+  projects (mostly Linux) as long as we follow their bindings specification.
+
+- Achieve small memory footprint
+
+  
