@@ -808,6 +808,7 @@ quiet_cmd_pad_cat = CAT     $@
 cmd_pad_cat = $(cmd_objcopy) && $(append) || rm -f $@
 
 all:		$(ALL-y)
+	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/gen_multi_images.sh
 ifneq ($(CONFIG_SYS_GENERIC_BOARD),y)
 	@echo "===================== WARNING ======================"
 	@echo "Please convert this board to generic board."

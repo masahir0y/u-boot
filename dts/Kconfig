@@ -51,6 +51,11 @@ config OF_HOSTFILE
 
 endchoice
 
+config OF_MULTI_IMAGES
+	bool "Generate multiple images with DTBs"
+	depends on OF_SEPARATE || OF_HOSTFILE
+	help
+
 config DEFAULT_DEVICE_TREE
 	string "Default Device Tree for DT control"
 	help

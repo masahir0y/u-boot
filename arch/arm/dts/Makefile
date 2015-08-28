@@ -206,6 +206,6 @@ DTC_FLAGS +=
 
 PHONY += dtbs
 dtbs: $(addprefix $(obj)/, $(dtb-y))
-	@:
+	$(Q)rm -rf .tmp_dtbs; $(foreach d,$(dtb-y),echo $d >> .tmp_dtbs;)
 
 clean-files := *.dtb
