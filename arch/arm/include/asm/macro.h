@@ -154,6 +154,9 @@ lr	.req	x30
 	 */
 	mov	\xreg1, #0x0830
 	movk	\xreg1, #0x30C5, lsl #16
+#ifndef CONFIG_SYS_ICACHE_OFF
+	orr	\xreg1, \xreg1, #(1 << 12)
+#endif
 	msr	sctlr_el2, \xreg1
 
 	/* Return to the EL2_SP2 mode from EL3 */
@@ -201,6 +204,9 @@ lr	.req	x30
 	 */
 	mov	\xreg1, #0x0800
 	movk	\xreg1, #0x30d0, lsl #16
+#ifndef CONFIG_SYS_ICACHE_OFF
+	orr	\xreg1, \xreg1, #(1 << 12)
+#endif
 	msr	sctlr_el1, \xreg1
 
 	/* Return to the EL1_SP1 mode from EL2 */
