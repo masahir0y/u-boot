@@ -169,6 +169,9 @@ lr	.req	x30
 			SCTLR_EL2_WXN_DIS | SCTLR_EL2_ICACHE_DIS |\
 			SCTLR_EL2_SA_DIS | SCTLR_EL2_DCACHE_DIS |\
 			SCTLR_EL2_ALIGN_DIS | SCTLR_EL2_MMU_DIS)
+#ifndef CONFIG_SYS_ICACHE_OFF
+	orr	\tmp, \tmp, #(1 << 12)
+#endif
 	msr	sctlr_el2, \tmp
 
 	mov	\tmp, sp
@@ -272,6 +275,9 @@ lr	.req	x30
 			SCTLR_EL1_CP15BEN_DIS | SCTLR_EL1_SA0_DIS |\
 			SCTLR_EL1_SA_DIS | SCTLR_EL1_DCACHE_DIS |\
 			SCTLR_EL1_ALIGN_DIS | SCTLR_EL1_MMU_DIS)
+#ifndef CONFIG_SYS_ICACHE_OFF
+	orr	\tmp, \tmp, #(1 << 12)
+#endif
 	msr	sctlr_el1, \tmp
 
 	mov	\tmp, sp
