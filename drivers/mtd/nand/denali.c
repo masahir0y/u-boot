@@ -14,6 +14,9 @@
 
 #include "denali.h"
 
+#define iowrite32(data, addr)	writel(data, addr)
+#define ioread32(data, addr)	readl(addr)
+
 #define NAND_DEFAULT_TIMINGS	-1
 
 static int onfi_timing_mode = NAND_DEFAULT_TIMINGS;
@@ -357,49 +360,6 @@ static void get_samsung_nand_para(struct denali_nand_info *denali,
 	}
 }
 
-static void get_toshiba_nand_para(struct denali_nand_info *denali)
-{
-	uint32_t tmp;
-
-	/*
-	 * Workaround to fix a controller bug which reports a wrong
-	 * spare area size for some kind of Toshiba NAND device
-	 */
-	if ((readl(denali->flash_reg + DEVICE_MAIN_AREA_SIZE) == 4096) &&
-	    (readl(denali->flash_reg + DEVICE_SPARE_AREA_SIZE) == 64)) {
-		writel(216, denali->flash_reg + DEVICE_SPARE_AREA_SIZE);
-		tmp = readl(denali->flash_reg + DEVICES_CONNECTED) *
-			readl(denali->flash_reg + DEVICE_SPARE_AREA_SIZE);
-		writel(tmp, denali->flash_reg + LOGICAL_PAGE_SPARE_SIZE);
-	}
-}
-
-static void get_hynix_nand_para(struct denali_nand_info *denali,
-							uint8_t device_id)
-{
-	uint32_t main_size, spare_size;
-
-	switch (device_id) {
-	case 0xD5: /* Hynix H27UAG8T2A, H27UBG8U5A or H27UCG8VFA */
-	case 0xD7: /* Hynix H27UDG8VEM, H27UCG8UDM or H27UCG8V5A */
-		writel(128, denali->flash_reg + PAGES_PER_BLOCK);
-		writel(4096, denali->flash_reg + DEVICE_MAIN_AREA_SIZE);
-		writel(224, denali->flash_reg + DEVICE_SPARE_AREA_SIZE);
-		main_size = 4096 *
-			readl(denali->flash_reg + DEVICES_CONNECTED);
-		spare_size = 224 *
-			readl(denali->flash_reg + DEVICES_CONNECTED);
-		writel(main_size, denali->flash_reg + LOGICAL_PAGE_DATA_SIZE);
-		writel(spare_size, denali->flash_reg + LOGICAL_PAGE_SPARE_SIZE);
-		writel(0, denali->flash_reg + DEVICE_WIDTH);
-		break;
-	default:
-		debug("Spectra: Unknown Hynix NAND (Device ID: 0x%x).\n"
-		      "Will use default parameter values instead.\n",
-		      device_id);
-	}
-}
-
 /*
  * determines how many NAND chips are connected to the controller. Note for
  * Intel CE4100 devices we don't support more than one device.
@@ -446,33 +406,6 @@ static void detect_max_banks(struct denali_nand_info *denali)
 		denali->max_banks = 1 << (features & FEATURES__N_BANKS);
 }
 
-static void detect_partition_feature(struct denali_nand_info *denali)
-{
-	/*
-	 * For MRST platform, denali->fwblks represent the
-	 * number of blocks firmware is taken,
-	 * FW is in protect partition and MTD driver has no
-	 * permission to access it. So let driver know how many
-	 * blocks it can't touch.
-	 */
-	if (readl(denali->flash_reg + FEATURES) & FEATURES__PARTITION) {
-		if ((readl(denali->flash_reg + PERM_SRC_ID(1)) &
-			PERM_SRC_ID__SRCID) == SPECTRA_PARTITION_ID) {
-			denali->fwblks =
-			    ((readl(denali->flash_reg + MIN_MAX_BANK(1)) &
-			      MIN_MAX_BANK__MIN_VALUE) *
-			     denali->blksperchip)
-			    +
-			    (readl(denali->flash_reg + MIN_BLK_ADDR(1)) &
-			    MIN_BLK_ADDR__VALUE);
-		} else {
-			denali->fwblks = SPECTRA_START_BLOCK;
-		}
-	} else {
-		denali->fwblks = SPECTRA_START_BLOCK;
-	}
-}
-
 static uint32_t denali_nand_timing_set(struct denali_nand_info *denali)
 {
 	uint32_t id_bytes[8], addr;
@@ -498,15 +431,9 @@ static uint32_t denali_nand_timing_set(struct denali_nand_info *denali)
 			return -EIO;
 	} else if (maf_id == 0xEC) { /* Samsung NAND */
 		get_samsung_nand_para(denali, device_id);
-	} else if (maf_id == 0x98) { /* Toshiba NAND */
-		get_toshiba_nand_para(denali);
-	} else if (maf_id == 0xAD) { /* Hynix NAND */
-		get_hynix_nand_para(denali, device_id);
 	}
 
 	find_valid_banks(denali);
-
-	detect_partition_feature(denali);
 
 	/*
 	 * If the user specified to override the default timings
@@ -1153,13 +1080,16 @@ static void denali_cmdfunc(struct mtd_info *mtd, unsigned int cmd, int col,
 /* Initialization code to bring the device up to a known good state */
 static void denali_hw_init(struct denali_nand_info *denali)
 {
+	denali->max_banks = CONFIG_NAND_DENALI_MAX_BANKS;
+
 	/*
 	 * tell driver how many bit controller will skip before writing
 	 * ECC code in OOB. This is normally used for bad block marker
 	 */
 	writel(CONFIG_NAND_DENALI_SPARE_AREA_SKIP_BYTES,
 	       denali->flash_reg + SPARE_AREA_SKIP_BYTES);
-	detect_max_banks(denali);
+	if (!denali->max_banks)
+		detect_max_banks(denali);
 	denali_nand_reset(denali);
 	writel(0x0F, denali->flash_reg + RB_PIN_ENABLED);
 	writel(CHIP_EN_DONT_CARE__FLAG,
@@ -1177,6 +1107,7 @@ static struct nand_ecclayout nand_oob;
 
 static int denali_init(struct denali_nand_info *denali)
 {
+	struct nand_chip *chip = &denali->nand;
 	struct mtd_info *mtd = nand_to_mtd(&denali->nand);
 	int ret;
 
@@ -1253,6 +1184,12 @@ static int denali_init(struct denali_nand_info *denali)
 	       denali->flash_reg + DEVICE_SPARE_AREA_SIZE);
 	if (readl(denali->flash_reg + DEVICES_CONNECTED) == 0)
 		writel(1, denali->flash_reg + DEVICES_CONNECTED);
+
+	iowrite32(chip->ecc.size, denali->flash_reg + CFG_DATA_BLOCK_SIZE);
+	iowrite32(chip->ecc.size, denali->flash_reg + CFG_LAST_DATA_BLOCK_SIZE);
+	/* chip->ecc.steps is set by nand_scan_tail(); not available here */
+	iowrite32(mtd->writesize / chip->ecc.size,
+		  denali->flash_reg + CFG_NUM_DATA_BLOCKS);
 
 	/* override the default operations */
 	denali->nand.ecc.read_page = denali_read_page;
