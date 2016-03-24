@@ -32,6 +32,17 @@ config NAND_DENALI_SPARE_AREA_SKIP_BYTES
 	  of OOB area before last ECC sector data starts.  This is potentially
 	  used to preserve the bad block marker in the OOB area.
 
+config NAND_DENALI_MAX_BANKS
+	int "Maximum number of supported banks"
+	default 0
+	help
+	  If set to a non-zero value, it is used as the maximum number of banks
+	  supported by this hardware.  Otherwise, the number of supported banks
+	  is auto-detected based on the "features" register of hardware.
+
+	  Set this option to the correct value if the auto-detection does not
+	  work.  If unsure, set 0.
+
 config NAND_VF610_NFC
 	bool "Support for Freescale NFC for VF610/MPC5125"
 	select SYS_NAND_SELF_INIT

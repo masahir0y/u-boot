@@ -1153,13 +1153,16 @@ static void denali_cmdfunc(struct mtd_info *mtd, unsigned int cmd, int col,
 /* Initialization code to bring the device up to a known good state */
 static void denali_hw_init(struct denali_nand_info *denali)
 {
+	denali->max_banks = CONFIG_NAND_DENALI_MAX_BANKS;
+
 	/*
 	 * tell driver how many bit controller will skip before writing
 	 * ECC code in OOB. This is normally used for bad block marker
 	 */
 	writel(CONFIG_NAND_DENALI_SPARE_AREA_SKIP_BYTES,
 	       denali->flash_reg + SPARE_AREA_SKIP_BYTES);
-	detect_max_banks(denali);
+	if (!denali->max_banks)
+		detect_max_banks(denali);
 	denali_nand_reset(denali);
 	writel(0x0F, denali->flash_reg + RB_PIN_ENABLED);
 	writel(CHIP_EN_DONT_CARE__FLAG,
