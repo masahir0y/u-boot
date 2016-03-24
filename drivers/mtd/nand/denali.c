@@ -14,9 +14,8 @@
 
 #include "denali.h"
 
-#define NAND_DEFAULT_TIMINGS	-1
-
-static int onfi_timing_mode = NAND_DEFAULT_TIMINGS;
+#define iowrite32(data, addr)	writel(data, addr)
+#define ioread32(data, addr)	readl(addr)
 
 /*
  * We define a macro here that combines all interrupts this driver uses into
@@ -225,209 +224,6 @@ static uint32_t denali_nand_reset(struct denali_nand_info *denali)
 }
 
 /*
- * this routine calculates the ONFI timing values for a given mode and
- * programs the clocking register accordingly. The mode is determined by
- * the get_onfi_nand_para routine.
- */
-static void nand_onfi_timing_set(struct denali_nand_info *denali,
-								uint16_t mode)
-{
-	uint32_t trea[6] = {40, 30, 25, 20, 20, 16};
-	uint32_t trp[6] = {50, 25, 17, 15, 12, 10};
-	uint32_t treh[6] = {30, 15, 15, 10, 10, 7};
-	uint32_t trc[6] = {100, 50, 35, 30, 25, 20};
-	uint32_t trhoh[6] = {0, 15, 15, 15, 15, 15};
-	uint32_t trloh[6] = {0, 0, 0, 0, 5, 5};
-	uint32_t tcea[6] = {100, 45, 30, 25, 25, 25};
-	uint32_t tadl[6] = {200, 100, 100, 100, 70, 70};
-	uint32_t trhw[6] = {200, 100, 100, 100, 100, 100};
-	uint32_t trhz[6] = {200, 100, 100, 100, 100, 100};
-	uint32_t twhr[6] = {120, 80, 80, 60, 60, 60};
-	uint32_t tcs[6] = {70, 35, 25, 25, 20, 15};
-
-	uint32_t data_invalid_rhoh, data_invalid_rloh, data_invalid;
-	uint32_t dv_window = 0;
-	uint32_t en_lo, en_hi;
-	uint32_t acc_clks;
-	uint32_t addr_2_data, re_2_we, re_2_re, we_2_re, cs_cnt;
-
-	en_lo = DIV_ROUND_UP(trp[mode], CLK_X);
-	en_hi = DIV_ROUND_UP(treh[mode], CLK_X);
-	if ((en_hi * CLK_X) < (treh[mode] + 2))
-		en_hi++;
-
-	if ((en_lo + en_hi) * CLK_X < trc[mode])
-		en_lo += DIV_ROUND_UP((trc[mode] - (en_lo + en_hi) * CLK_X),
-				      CLK_X);
-
-	if ((en_lo + en_hi) < CLK_MULTI)
-		en_lo += CLK_MULTI - en_lo - en_hi;
-
-	while (dv_window < 8) {
-		data_invalid_rhoh = en_lo * CLK_X + trhoh[mode];
-
-		data_invalid_rloh = (en_lo + en_hi) * CLK_X + trloh[mode];
-
-		data_invalid = data_invalid_rhoh < data_invalid_rloh ?
-					data_invalid_rhoh : data_invalid_rloh;
-
-		dv_window = data_invalid - trea[mode];
-
-		if (dv_window < 8)
-			en_lo++;
-	}
-
-	acc_clks = DIV_ROUND_UP(trea[mode], CLK_X);
-
-	while (acc_clks * CLK_X - trea[mode] < 3)
-		acc_clks++;
-
-	if (data_invalid - acc_clks * CLK_X < 2)
-		debug("%s, Line %d: Warning!\n", __FILE__, __LINE__);
-
-	addr_2_data = DIV_ROUND_UP(tadl[mode], CLK_X);
-	re_2_we = DIV_ROUND_UP(trhw[mode], CLK_X);
-	re_2_re = DIV_ROUND_UP(trhz[mode], CLK_X);
-	we_2_re = DIV_ROUND_UP(twhr[mode], CLK_X);
-	cs_cnt = DIV_ROUND_UP((tcs[mode] - trp[mode]), CLK_X);
-	if (cs_cnt == 0)
-		cs_cnt = 1;
-
-	if (tcea[mode]) {
-		while (cs_cnt * CLK_X + trea[mode] < tcea[mode])
-			cs_cnt++;
-	}
-
-	/* Sighting 3462430: Temporary hack for MT29F128G08CJABAWP:B */
-	if (readl(denali->flash_reg + MANUFACTURER_ID) == 0 &&
-	    readl(denali->flash_reg + DEVICE_ID) == 0x88)
-		acc_clks = 6;
-
-	writel(acc_clks, denali->flash_reg + ACC_CLKS);
-	writel(re_2_we, denali->flash_reg + RE_2_WE);
-	writel(re_2_re, denali->flash_reg + RE_2_RE);
-	writel(we_2_re, denali->flash_reg + WE_2_RE);
-	writel(addr_2_data, denali->flash_reg + ADDR_2_DATA);
-	writel(en_lo, denali->flash_reg + RDWR_EN_LO_CNT);
-	writel(en_hi, denali->flash_reg + RDWR_EN_HI_CNT);
-	writel(cs_cnt, denali->flash_reg + CS_SETUP_CNT);
-}
-
-/* queries the NAND device to see what ONFI modes it supports. */
-static uint32_t get_onfi_nand_para(struct denali_nand_info *denali)
-{
-	int i;
-
-	/*
-	 * we needn't to do a reset here because driver has already
-	 * reset all the banks before
-	 */
-	if (!(readl(denali->flash_reg + ONFI_TIMING_MODE) &
-	    ONFI_TIMING_MODE__VALUE))
-		return -EIO;
-
-	for (i = 5; i > 0; i--) {
-		if (readl(denali->flash_reg + ONFI_TIMING_MODE) &
-			(0x01 << i))
-			break;
-	}
-
-	nand_onfi_timing_set(denali, i);
-
-	/*
-	 * By now, all the ONFI devices we know support the page cache
-	 * rw feature. So here we enable the pipeline_rw_ahead feature
-	 */
-
-	return 0;
-}
-
-static void get_samsung_nand_para(struct denali_nand_info *denali,
-							uint8_t device_id)
-{
-	if (device_id == 0xd3) { /* Samsung K9WAG08U1A */
-		/* Set timing register values according to datasheet */
-		writel(5, denali->flash_reg + ACC_CLKS);
-		writel(20, denali->flash_reg + RE_2_WE);
-		writel(12, denali->flash_reg + WE_2_RE);
-		writel(14, denali->flash_reg + ADDR_2_DATA);
-		writel(3, denali->flash_reg + RDWR_EN_LO_CNT);
-		writel(2, denali->flash_reg + RDWR_EN_HI_CNT);
-		writel(2, denali->flash_reg + CS_SETUP_CNT);
-	}
-}
-
-static void get_toshiba_nand_para(struct denali_nand_info *denali)
-{
-	uint32_t tmp;
-
-	/*
-	 * Workaround to fix a controller bug which reports a wrong
-	 * spare area size for some kind of Toshiba NAND device
-	 */
-	if ((readl(denali->flash_reg + DEVICE_MAIN_AREA_SIZE) == 4096) &&
-	    (readl(denali->flash_reg + DEVICE_SPARE_AREA_SIZE) == 64)) {
-		writel(216, denali->flash_reg + DEVICE_SPARE_AREA_SIZE);
-		tmp = readl(denali->flash_reg + DEVICES_CONNECTED) *
-			readl(denali->flash_reg + DEVICE_SPARE_AREA_SIZE);
-		writel(tmp, denali->flash_reg + LOGICAL_PAGE_SPARE_SIZE);
-	}
-}
-
-static void get_hynix_nand_para(struct denali_nand_info *denali,
-							uint8_t device_id)
-{
-	uint32_t main_size, spare_size;
-
-	switch (device_id) {
-	case 0xD5: /* Hynix H27UAG8T2A, H27UBG8U5A or H27UCG8VFA */
-	case 0xD7: /* Hynix H27UDG8VEM, H27UCG8UDM or H27UCG8V5A */
-		writel(128, denali->flash_reg + PAGES_PER_BLOCK);
-		writel(4096, denali->flash_reg + DEVICE_MAIN_AREA_SIZE);
-		writel(224, denali->flash_reg + DEVICE_SPARE_AREA_SIZE);
-		main_size = 4096 *
-			readl(denali->flash_reg + DEVICES_CONNECTED);
-		spare_size = 224 *
-			readl(denali->flash_reg + DEVICES_CONNECTED);
-		writel(main_size, denali->flash_reg + LOGICAL_PAGE_DATA_SIZE);
-		writel(spare_size, denali->flash_reg + LOGICAL_PAGE_SPARE_SIZE);
-		writel(0, denali->flash_reg + DEVICE_WIDTH);
-		break;
-	default:
-		debug("Spectra: Unknown Hynix NAND (Device ID: 0x%x).\n"
-		      "Will use default parameter values instead.\n",
-		      device_id);
-	}
-}
-
-/*
- * determines how many NAND chips are connected to the controller. Note for
- * Intel CE4100 devices we don't support more than one device.
- */
-static void find_valid_banks(struct denali_nand_info *denali)
-{
-	uint32_t id[denali->max_banks];
-	int i;
-
-	denali->total_used_banks = 1;
-	for (i = 0; i < denali->max_banks; i++) {
-		index_addr(denali, MODE_11 | (i << 24) | 0, 0x90);
-		index_addr(denali, MODE_11 | (i << 24) | 1, 0);
-		index_addr_read_data(denali, MODE_11 | (i << 24) | 2, &id[i]);
-
-		if (i == 0) {
-			if (!(id[i] & 0x0ff))
-				break;
-		} else {
-			if ((id[i] & 0x0ff) == (id[0] & 0x0ff))
-				denali->total_used_banks++;
-			else
-				break;
-		}
-	}
-}
-
-/*
  * Use the configuration feature register to determine the maximum number of
  * banks that the hardware supports.
  */
@@ -444,78 +240,6 @@ static void detect_max_banks(struct denali_nand_info *denali)
 		denali->max_banks = 2 << (features & FEATURES__N_BANKS);
 	else
 		denali->max_banks = 1 << (features & FEATURES__N_BANKS);
-}
-
-static void detect_partition_feature(struct denali_nand_info *denali)
-{
-	/*
-	 * For MRST platform, denali->fwblks represent the
-	 * number of blocks firmware is taken,
-	 * FW is in protect partition and MTD driver has no
-	 * permission to access it. So let driver know how many
-	 * blocks it can't touch.
-	 */
-	if (readl(denali->flash_reg + FEATURES) & FEATURES__PARTITION) {
-		if ((readl(denali->flash_reg + PERM_SRC_ID(1)) &
-			PERM_SRC_ID__SRCID) == SPECTRA_PARTITION_ID) {
-			denali->fwblks =
-			    ((readl(denali->flash_reg + MIN_MAX_BANK(1)) &
-			      MIN_MAX_BANK__MIN_VALUE) *
-			     denali->blksperchip)
-			    +
-			    (readl(denali->flash_reg + MIN_BLK_ADDR(1)) &
-			    MIN_BLK_ADDR__VALUE);
-		} else {
-			denali->fwblks = SPECTRA_START_BLOCK;
-		}
-	} else {
-		denali->fwblks = SPECTRA_START_BLOCK;
-	}
-}
-
-static uint32_t denali_nand_timing_set(struct denali_nand_info *denali)
-{
-	uint32_t id_bytes[8], addr;
-	uint8_t maf_id, device_id;
-	int i;
-
-	/*
-	 * Use read id method to get device ID and other params.
-	 * For some NAND chips, controller can't report the correct
-	 * device ID by reading from DEVICE_ID register
-	 */
-	addr = MODE_11 | BANK(denali->flash_bank);
-	index_addr(denali, addr | 0, 0x90);
-	index_addr(denali, addr | 1, 0);
-	for (i = 0; i < 8; i++)
-		index_addr_read_data(denali, addr | 2, &id_bytes[i]);
-	maf_id = id_bytes[0];
-	device_id = id_bytes[1];
-
-	if (readl(denali->flash_reg + ONFI_DEVICE_NO_OF_LUNS) &
-		ONFI_DEVICE_NO_OF_LUNS__ONFI_DEVICE) { /* ONFI 1.0 NAND */
-		if (get_onfi_nand_para(denali))
-			return -EIO;
-	} else if (maf_id == 0xEC) { /* Samsung NAND */
-		get_samsung_nand_para(denali, device_id);
-	} else if (maf_id == 0x98) { /* Toshiba NAND */
-		get_toshiba_nand_para(denali);
-	} else if (maf_id == 0xAD) { /* Hynix NAND */
-		get_hynix_nand_para(denali, device_id);
-	}
-
-	find_valid_banks(denali);
-
-	detect_partition_feature(denali);
-
-	/*
-	 * If the user specified to override the default timings
-	 * with a specific ONFI mode, we apply those changes here.
-	 */
-	if (onfi_timing_mode != NAND_DEFAULT_TIMINGS)
-		nand_onfi_timing_set(denali, onfi_timing_mode);
-
-	return 0;
 }
 
 /*
@@ -1153,13 +877,23 @@ static void denali_cmdfunc(struct mtd_info *mtd, unsigned int cmd, int col,
 /* Initialization code to bring the device up to a known good state */
 static void denali_hw_init(struct denali_nand_info *denali)
 {
+#if defined(CONFIG_ARCH_UNIPHIER_PRO5) || \
+	defined(CONFIG_ARCH_UNIPHIER_PXS2) || \
+	defined(CONFIG_ARCH_UNIPHIER_LD6B) || \
+	defined(CONFIG_ARCH_UNIPHIER_LD11) || \
+	defined(CONFIG_ARCH_UNIPHIER_LD20)
+	denali->max_banks = 4;
+#else
+	denali->max_banks = 0;
+#endif
 	/*
 	 * tell driver how many bit controller will skip before writing
 	 * ECC code in OOB. This is normally used for bad block marker
 	 */
 	writel(CONFIG_NAND_DENALI_SPARE_AREA_SKIP_BYTES,
 	       denali->flash_reg + SPARE_AREA_SKIP_BYTES);
-	detect_max_banks(denali);
+	if (!denali->max_banks)
+		detect_max_banks(denali);
 	denali_nand_reset(denali);
 	writel(0x0F, denali->flash_reg + RB_PIN_ENABLED);
 	writel(CHIP_EN_DONT_CARE__FLAG,
@@ -1169,7 +903,6 @@ static void denali_hw_init(struct denali_nand_info *denali)
 	/* Should set value for these registers when init */
 	writel(0, denali->flash_reg + TWO_ROW_ADDR_CYCLES);
 	writel(1, denali->flash_reg + ECC_ENABLE);
-	denali_nand_timing_set(denali);
 	denali_irq_init(denali);
 }
 
@@ -1177,6 +910,7 @@ static struct nand_ecclayout nand_oob;
 
 static int denali_init(struct denali_nand_info *denali)
 {
+	struct nand_chip *chip = &denali->nand;
 	struct mtd_info *mtd = nand_to_mtd(&denali->nand);
 	int ret;
 
@@ -1253,6 +987,12 @@ static int denali_init(struct denali_nand_info *denali)
 	       denali->flash_reg + DEVICE_SPARE_AREA_SIZE);
 	if (readl(denali->flash_reg + DEVICES_CONNECTED) == 0)
 		writel(1, denali->flash_reg + DEVICES_CONNECTED);
+
+	iowrite32(chip->ecc.size, denali->flash_reg + CFG_DATA_BLOCK_SIZE);
+	iowrite32(chip->ecc.size, denali->flash_reg + CFG_LAST_DATA_BLOCK_SIZE);
+	/* chip->ecc.steps is set by nand_scan_tail(); not available here */
+	iowrite32(mtd->writesize / chip->ecc.size,
+		  denali->flash_reg + CFG_NUM_DATA_BLOCKS);
 
 	/* override the default operations */
 	denali->nand.ecc.read_page = denali_read_page;

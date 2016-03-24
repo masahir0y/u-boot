@@ -292,6 +292,14 @@
 #define     ERR_CORRECTION_INFO__ERROR_TYPE		0x4000
 #define     ERR_CORRECTION_INFO__LAST_ERR_INFO		0x8000
 
+#define CFG_DATA_BLOCK_SIZE			0x6b0
+
+#define CFG_LAST_DATA_BLOCK_SIZE		0x6c0
+
+#define CFG_NUM_DATA_BLOCKS			0x6d0
+
+#define CFG_META_DATA_SIZE			0x6e0
+
 #define DMA_ENABLE				0x700
 #define     DMA_ENABLE__FLAG				0x0001
 
@@ -362,29 +370,8 @@
 #define     MIN_MAX_BANK__MIN_VALUE			0x0003
 #define     MIN_MAX_BANK__MAX_VALUE			0x000c
 
-/* lld.h */
-#define GOOD_BLOCK 0
-#define DEFECTIVE_BLOCK 1
-#define READ_ERROR 2
-
 #define CLK_X  5
 #define CLK_MULTI 4
-
-/* spectraswconfig.h */
-#define CMD_DMA 0
-
-#define SPECTRA_PARTITION_ID    0
-/**** Block Table and Reserved Block Parameters *****/
-#define SPECTRA_START_BLOCK     3
-#define NUM_FREE_BLOCKS_GATE    30
-
-/* KBV - Updated to LNW scratch register address */
-#define SCRATCH_REG_ADDR    CONFIG_MTD_NAND_DENALI_SCRATCH_REG_ADDR
-#define SCRATCH_REG_SIZE    64
-
-#define GLOB_HWCTL_DEFAULT_BLKS    2048
-
-#define CUSTOM_CONF_PARAMS      0
 
 #define INDEX_CTRL_REG    0x0
 #define INDEX_DATA_REG    0x10
@@ -394,30 +381,6 @@
 #define MODE_10    0x08000000
 #define MODE_11    0x0C000000
 
-
-#define DATA_TRANSFER_MODE              0
-#define PROTECTION_PER_BLOCK            1
-#define LOAD_WAIT_COUNT                 2
-#define PROGRAM_WAIT_COUNT              3
-#define ERASE_WAIT_COUNT                4
-#define INT_MONITOR_CYCLE_COUNT         5
-#define READ_BUSY_PIN_ENABLED           6
-#define MULTIPLANE_OPERATION_SUPPORT    7
-#define PRE_FETCH_MODE                  8
-#define CE_DONT_CARE_SUPPORT            9
-#define COPYBACK_SUPPORT                10
-#define CACHE_WRITE_SUPPORT             11
-#define CACHE_READ_SUPPORT              12
-#define NUM_PAGES_IN_BLOCK              13
-#define ECC_ENABLE_SELECT               14
-#define WRITE_ENABLE_2_READ_ENABLE      15
-#define ADDRESS_2_DATA                  16
-#define READ_ENABLE_2_WRITE_ENABLE      17
-#define TWO_ROW_ADDRESS_CYCLES          18
-#define MULTIPLANE_ADDRESS_RESTRICT     19
-#define ACC_CLOCKS                      20
-#define READ_WRITE_ENABLE_LOW_COUNT     21
-#define READ_WRITE_ENABLE_HIGH_COUNT    22
 
 #define ECC_SECTOR_SIZE     512
 
@@ -443,23 +406,17 @@ struct denali_nand_info {
 	struct nand_buf buf;
 	struct device *dev;
 	int total_used_banks;
-	uint32_t block;  /* stored for future use */
 	uint32_t page;
-	void __iomem *flash_reg;  /* Mapped io reg base address */
-	void __iomem *flash_mem;  /* Mapped io reg base address */
+	void __iomem *flash_reg;	/* Register Interface */
+	void __iomem *flash_mem;	/* Host Data/Command Interface */
 
 	/* elements used by ISR */
 	/*struct completion complete;*/
 
 	uint32_t irq_status;
-	int irq_debug_array[32];
-	int idx;
 	int irq;
 
 	uint32_t devnum;	/* represent how many nands connected */
-	uint32_t fwblks; /* represent how many blocks FW used */
-	uint32_t totalblks;
-	uint32_t blksperchip;
 	uint32_t bbtskipbytes;
 	uint32_t max_banks;
 };
