@@ -110,4 +110,15 @@ config SANDBOX_MMC
 	  improves build coverage for sandbox and makes it easier to detect
 	  MMC build errors with sandbox.
 
+config MMC_SDHCI_CADENCE
+	bool "SDHCI support for the Cadence SD/SDIO/eMMC controller"
+	depends on OF_CONTROL
+	select DM_MMC_OPS
+	help
+	  This selects the Cadence SD/SDIO/eMMC driver.
+
+	  If you have a controller with this interface, say Y here.
+
+	  If unsure, say N.
+
 endmenu

@@ -55,6 +55,7 @@ obj-$(CONFIG_SOCFPGA_DWMMC) += socfpga_dw_mmc.o
 obj-$(CONFIG_SPEAR_SDHCI) += spear_sdhci.o
 obj-$(CONFIG_TEGRA_MMC) += tegra_mmc.o
 obj-$(CONFIG_MMC_UNIPHIER) += uniphier-sd.o
+obj-$(CONFIG_MMC_SDHCI_CADENCE)		+= sdhci-cadence.o
 obj-$(CONFIG_ZYNQ_SDHCI) += zynq_sdhci.o
 obj-$(CONFIG_ROCKCHIP_SDHCI) += rockchip_sdhci.o
 
