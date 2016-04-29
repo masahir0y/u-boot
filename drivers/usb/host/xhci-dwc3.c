@@ -9,8 +9,13 @@
  */
 
 #include <common.h>
-#include <asm/io.h>
+#include <dm/device.h>
+#include <mapmem.h>
+#include <linux/io.h>
 #include <linux/usb/dwc3.h>
+#include <linux/sizes.h>
+
+#include "xhci.h"
 
 void dwc3_set_mode(struct dwc3 *dwc3_reg, u32 mode)
 {
@@ -97,3 +102,67 @@ void dwc3_set_fladj(struct dwc3 *dwc3_reg, u32 val)
 	setbits_le32(&dwc3_reg->g_fladj, GFLADJ_30MHZ_REG_SEL |
 			GFLADJ_30MHZ(val));
 }
+
+struct dwc3_priv {
+	struct xhci_ctrl ctrl;	/* should be the first member */
+	void __iomem *regs;
+};
+
+static int dwc3_probe(struct udevice *dev)
+{
+	struct dwc3_priv *priv = dev_get_priv(dev);
+	struct xhci_hccr *hccr;
+	struct xhci_hcor *hcor;
+	fdt_addr_t base;
+	int ret;
+
+	base = dev_get_addr(dev);
+	if (base == FDT_ADDR_T_NONE)
+		return -EINVAL;
+
+	priv->regs = map_sysmem(base, SZ_32K);
+	if (!priv->regs)
+		return -ENOMEM;
+
+	hccr = priv->regs;
+
+	hcor = priv->regs + HC_LENGTH(xhci_readl(&hccr->cr_capbase));
+
+	ret = dwc3_core_init(priv->regs + DWC3_REG_OFFSET);
+	if (ret) {
+		puts("XHCI: failed to initialize controller\n");
+		return ret;
+	}
+
+	/* We are hard-coding DWC3 core to Host Mode */
+	dwc3_set_mode(priv->regs + DWC3_REG_OFFSET, DWC3_GCTL_PRTCAP_HOST);
+
+	return xhci_register(dev, hccr, hcor);
+}
+
+static int dwc3_remove(struct udevice *dev)
+{
+	struct dwc3_priv *priv = dev_get_priv(dev);
+
+	xhci_deregister(dev);
+	unmap_sysmem(priv->regs);
+
+	return 0;
+}
+
+static const struct udevice_id of_dwc3_match[] = {
+	{ .compatible = "snps,dwc3" },
+	{ .compatible = "synopsys,dwc3" },
+	{ /* sentinel */ }
+};
+
+U_BOOT_DRIVER(dwc3) = {
+	.name = "dwc3",
+	.id = UCLASS_USB,
+	.of_match = of_dwc3_match,
+	.probe = dwc3_probe,
+	.remove = dwc3_remove,
+	.ops = &xhci_usb_ops,
+	.priv_auto_alloc_size = sizeof(struct dwc3_priv),
+	.flags	= DM_FLAG_ALLOC_PRIV_DMA,
+};
