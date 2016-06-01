@@ -15,6 +15,16 @@ config USB_XHCI_HCD
 
 if USB_XHCI_HCD
 
+config USB_XHCI_PLATFORM
+	bool "Generic xHCI driver for a platform device"
+	---help---
+	  Adds an xHCI host driver for a generic platform device, which
+	  provides a memory space and an irq.
+	  It is also a prerequisite for platform specific drivers that
+	  implement some extra quirks.
+
+	  If unsure, say N.
+
 config USB_XHCI_DWC3
 	bool "DesignWare USB3 DRD Core Support"
 	help
