@@ -215,7 +215,7 @@ CROSS_COMPILE = {
     'mips': 'mips-linux-',
     'nds32': 'nds32le-linux-',
     'nios2': 'nios2-linux-gnu-',
-    'openrisc': 'or1k-elf-',
+    'openrisc': 'or32-linux-',
     'powerpc': 'powerpc-linux-',
     'sh': 'sh-linux-gnu-',
     'sparc': 'sparc-linux-',
