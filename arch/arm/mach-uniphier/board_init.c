@@ -149,7 +149,9 @@ int board_init(void)
 		led_puts("U1");
 		uniphier_ld20_pll_init(bd);
 		uniphier_ld20_clk_init();
+#ifdef CONFIG_ARMV8_MULTIENTRY
 		cci500_init(2);
+#endif
 		break;
 #endif
 	default:
@@ -164,7 +166,7 @@ int board_init(void)
 
 	led_puts("U3");
 
-#ifdef CONFIG_ARM64
+#ifdef CONFIG_ARMV8_MULTIENTRY
 	uniphier_smp_kick_all_cpus();
 #endif
 

@@ -14,8 +14,8 @@ config ARCH_UNIPHIER_64BIT
 	bool
 	select ARM64
 	select SPL_SEPARATE_BSS
-	select ARMV8_MULTIENTRY
-	select ARMV8_SPIN_TABLE
+	select ARMV8_MULTIENTRY if !ARCH_UNIPHIER_ARMTF
+	select ARMV8_SPIN_TABLE if !ARCH_UNIPHIER_ARMTF
 
 choice
         prompt "UniPhier SoC select"
@@ -80,6 +80,11 @@ config CACHE_UNIPHIER
 	default y
 	help
 	  This option allows to use the UniPhier System Cache as L2 cache.
+
+config ARCH_UNIPHIER_ARMTF
+	bool "Make SPL jump to ARM Trusted Firmware"
+	depends on ARCH_UNIPHIER_64BIT
+	default y
 
 config MICRO_SUPPORT_CARD
 	bool "Use Micro Support Card"
