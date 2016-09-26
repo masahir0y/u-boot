@@ -95,12 +95,14 @@
 #ifdef CONFIG_ARM64
 #define CPU_RELEASE_ADDR			0x80000000
 #define COUNTER_FREQUENCY			50000000
+#ifdef CONFIG_ARMV8_MULTIENTRY
 #define CONFIG_GICV3
 #define GICD_BASE				0x5fe00000
 #if defined(CONFIG_ARCH_UNIPHIER_LD11)
 #define GICR_BASE				0x5fe40000
 #elif defined(CONFIG_ARCH_UNIPHIER_LD20)
 #define GICR_BASE				0x5fe80000
+#endif
 #endif
 #else
 /* Time clock 1MHz */
