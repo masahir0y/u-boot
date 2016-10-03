@@ -84,6 +84,12 @@ save_boot_params_ret:
 1:	msr	vbar_el1, x0
 	mov	x0, #3 << 20
 	msr	cpacr_el1, x0			/* Enable FP/SIMD */
+
+	mrs	x0, sctlr_el1
+	bic	x0, x0, #0x10
+	bic	x0, x0, #0x8
+	bic	x0, x0, #0x2
+	msr	sctlr_el1, x0
 0:
 
 	/* Apply ARM core specific erratas */
