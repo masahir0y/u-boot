@@ -362,6 +362,8 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_emmc>;
 		clocks = <&mio_clk 1>;
+		reset-names = "host", "hw-reset";
+		resets = <&mio_rst 1>, <&mio_rst 6>;
 		bus-width = <8>;
 		non-removable;
 	};
@@ -375,6 +377,8 @@
 		pinctrl-0 = <&pinctrl_sd>;
 		pinctrl-1 = <&pinctrl_sd_1v8>;
 		clocks = <&mio_clk 0>;
+		reset-names = "host";
+		resets = <&mio_rst 0>;
 		bus-width = <4>;
 	};
 

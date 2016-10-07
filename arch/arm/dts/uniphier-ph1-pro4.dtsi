@@ -352,6 +352,8 @@
 		pinctrl-0 = <&pinctrl_sd>;
 		pinctrl-1 = <&pinctrl_sd_1v8>;
 		clocks = <&mio_clk 0>;
+		reset-names = "host", "bridge";
+		resets = <&mio_rst 0>, <&mio_rst 3>;
 		bus-width = <4>;
 	};
 
@@ -364,6 +366,8 @@
 		pinctrl-0 = <&pinctrl_emmc>;
 		pinctrl-1 = <&pinctrl_emmc_1v8>;
 		clocks = <&mio_clk 1>;
+		reset-names = "host", "bridge", "hw-reset";
+		resets = <&mio_rst 1>, <&mio_rst 4>, <&mio_rst 6>;
 		bus-width = <8>;
 		non-removable;
 	};
@@ -377,6 +381,7 @@
 		pinctrl-0 = <&pinctrl_sd1>;
 		pinctrl-1 = <&pinctrl_sd1_1v8>;
 		clocks = <&mio_clk 2>;
+		resets = <&mio_rst 2>, <&mio_rst 5>;
 		bus-width = <4>;
 	};
 
@@ -387,7 +392,8 @@
 		interrupts = <0 80 4>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_usb2>;
-		clocks = <&mio_clk 3>, <&mio_clk 6>;
+		clocks = <&mio_clk 7>, <&mio_clk 8>, <&mio_clk 12>;
+		resets = <&mio_rst 7>, <&mio_rst 8>, <&mio_rst 12>, <&sys_rst 8>;
 	};
 
 	usb3: usb@5a810100 {
@@ -397,7 +403,8 @@
 		interrupts = <0 81 4>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_usb3>;
-		clocks = <&mio_clk 4>, <&mio_clk 6>;
+		clocks = <&mio_clk 7>, <&mio_clk 9>, <&mio_clk 13>;
+		resets = <&mio_rst 7>, <&mio_rst 9>, <&mio_rst 13>, <&sys_rst 8>;
 	};
 
 	aidet@5fc20000 {

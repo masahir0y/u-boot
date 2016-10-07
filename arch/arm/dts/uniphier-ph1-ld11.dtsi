@@ -230,7 +230,8 @@
 			interrupts = <0 243 4>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&pinctrl_usb0>;
-			clocks = <&mio_clk 3>, <&mio_clk 6>;
+			clocks = <&mio_clk 7>, <&mio_clk 8>, <&mio_clk 12>;
+			resets = <&mio_rst 7>, <&mio_rst 8>, <&mio_rst 12>, <&sys_rst 8>;
 		};
 
 		usb1: usb@5a810100 {
@@ -240,7 +241,8 @@
 			interrupts = <0 244 4>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&pinctrl_usb1>;
-			clocks = <&mio_clk 4>, <&mio_clk 6>;
+			clocks = <&mio_clk 7>, <&mio_clk 9>, <&mio_clk 13>;
+			resets = <&mio_rst 7>, <&mio_rst 9>, <&mio_rst 13>, <&sys_rst 8>;
 		};
 
 		usb2: usb@5a820100 {
@@ -250,7 +252,8 @@
 			interrupts = <0 245 4>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&pinctrl_usb2>;
-			clocks = <&mio_clk 5>, <&mio_clk 6>;
+			clocks = <&mio_clk 7>, <&mio_clk 10>, <&mio_clk 14>;
+			resets = <&mio_rst 7>, <&mio_rst 10>, <&mio_rst 14>, <&sys_rst 8>;
 		};
 
 		mioctrl@5b3e0000 {

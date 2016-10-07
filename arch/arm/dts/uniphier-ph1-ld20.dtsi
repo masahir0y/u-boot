@@ -271,6 +271,8 @@
 			pinctrl-names = "default";
 			pinctrl-0 = <&pinctrl_sd>;
 			clocks = <&mio_clk 0>;
+			reset-names = "host";
+			resets = <&mio_rst 0>;
 			bus-width = <4>;
 		};
 
