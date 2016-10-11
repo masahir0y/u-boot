@@ -28,15 +28,12 @@ static void nand_denali_wp_disable(void)
 #endif
 }
 
-#define VENDOR_PREFIX		"socionext,"
-#define DTB_FILE_PREFIX		"uniphier-"
-
 static int uniphier_set_fdt_file(void)
 {
 	DECLARE_GLOBAL_DATA_PTR;
 	const char *compat;
 	char dtb_name[256];
-	int buf_len = 256;
+	int buf_len = sizeof(dtb_name);
 	int ret;
 
 	if (getenv("fdt_file"))
@@ -46,13 +43,11 @@ static int uniphier_set_fdt_file(void)
 	if (ret)
 		return -EINVAL;
 
-	if (strncmp(compat, VENDOR_PREFIX, strlen(VENDOR_PREFIX)))
+	/* rip off the vendor prefix "socionext,"  */
+	compat = strchr(compat, ',');
+	if (!compat)
 		return -EINVAL;
-
-	compat += strlen(VENDOR_PREFIX);
-
-	strncat(dtb_name, DTB_FILE_PREFIX, buf_len);
-	buf_len -= strlen(DTB_FILE_PREFIX);
+	compat++;
 
 	strncat(dtb_name, compat, buf_len);
 	buf_len -= strlen(compat);
