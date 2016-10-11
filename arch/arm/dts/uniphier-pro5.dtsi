@@ -1,7 +1,8 @@
 /*
- * Device Tree Source for UniPhier PH1-Pro5 SoC
+ * Device Tree Source for UniPhier Pro5 SoC
  *
- * Copyright (C) 2015 Masahiro Yamada <yamada.masahiro@socionext.com>
+ * Copyright (C) 2015-2016 Socionext Inc.
+ *   Author: Masahiro Yamada <yamada.masahiro@socionext.com>
  *
  * SPDX-License-Identifier:	GPL-2.0+	X11
  */
@@ -9,17 +10,17 @@
 /include/ "uniphier-common32.dtsi"
 
 / {
-	compatible = "socionext,ph1-pro5";
+	compatible = "socionext,uniphier-pro5";
 
 	cpus {
 		#address-cells = <1>;
 		#size-cells = <0>;
-		enable-method = "socionext,uniphier-smp";
 
 		cpu@0 {
 			device_type = "cpu";
 			compatible = "arm,cortex-a9";
 			reg = <0>;
+			enable-method = "psci";
 			next-level-cache = <&l2>;
 		};
 
@@ -27,6 +28,7 @@
 			device_type = "cpu";
 			compatible = "arm,cortex-a9";
 			reg = <1>;
+			enable-method = "psci";
 			next-level-cache = <&l2>;
 		};
 	};

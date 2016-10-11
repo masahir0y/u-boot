@@ -1,7 +1,8 @@
 /*
- * Device Tree Source for UniPhier PH1-sLD8 SoC
+ * Device Tree Source for UniPhier sLD8 SoC
  *
- * Copyright (C) 2014-2015 Masahiro Yamada <yamada.masahiro@socionext.com>
+ * Copyright (C) 2015-2016 Socionext Inc.
+ *   Author: Masahiro Yamada <yamada.masahiro@socionext.com>
  *
  * SPDX-License-Identifier:	GPL-2.0+	X11
  */
@@ -9,7 +10,7 @@
 /include/ "uniphier-common32.dtsi"
 
 / {
-	compatible = "socionext,ph1-sld8";
+	compatible = "socionext,uniphier-sld8";
 
 	cpus {
 		#address-cells = <1>;
@@ -19,6 +20,7 @@
 			device_type = "cpu";
 			compatible = "arm,cortex-a9";
 			reg = <0>;
+			enable-method = "psci";
 			next-level-cache = <&l2>;
 		};
 	};
