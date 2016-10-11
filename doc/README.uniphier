@@ -5,6 +5,8 @@ U-Boot for UniPhier SoC family
 Tested toolchains
 -----------------
 
+[32bit SoCs]
+
  (a) Ubuntu packages  (CROSS_COMPILE=arm-linux-gnueabi-)
 
   If you are building U-Boot on Ubuntu, its standard package is recommended.
@@ -24,9 +26,32 @@ Tested toolchains
 
     ftp://www.kernel.org/pub/tools/crosstool/files/bin/
 
+[64bit SoCs]
+
+ (a) Ubuntu packages  (CROSS_COMPILE=aarch64-linux-gnu-)
+
+  If you are building U-Boot on Ubuntu, its standard package is recommended.
+  You can install it as follows:
+
+    $ sudo apt-get install gcc-arm-linux-gnueabi-
+
+ (b) Linaro compilers  (CROSS_COMPILE=aarch64-linux-gnu-)
+
+  You can download pre-built toolchains from:
+
+    http://www.linaro.org/downloads/
+
+ (c) kernel.org compilers  (CROSS_COMPILE=aarch64-linux-)
+
+  You can download pre-built toolchains from:
+
+    ftp://www.kernel.org/pub/tools/crosstool/files/bin/
+
 
 Compile the source
 ------------------
+
+[32bit SoCs]
 
 sLD3 reference board:
     $ make uniphier_sld3_defconfig
@@ -68,8 +93,18 @@ LD6b reference board:
     $ make uniphier_pxs2_ld6b_defconfig
     $ make CROSS_COMPILE=arm-linux-gnueabi- DEVICE_TREE=uniphier-ld6b-ref
 
-You may wish to change the "CROSS_COMPILE=arm-linux-gnueabi-"
-to use your favorite compiler.
+[64bit SoCs]
+
+LD11 reference board:
+    $ make uniphier_ld11_defconfig
+    $ make CROSS_COMPILE=aarch64-linux-gnu-
+
+LD20 reference board:
+    $ make uniphier_ld20_defconfig
+    $ make CROSS_COMPILE=aarch64-linux-gnu-
+
+
+You may wish to change the "CROSS_COMPILE=..." to use your favorite compiler.
 
 
 Burn U-Boot images to NAND
@@ -179,4 +214,4 @@ newer SoCs.  Even if it is, EA[25] is not connected on most of the boards.
 
 --
 Masahiro Yamada <yamada.masahiro@socionext.com>
-Feb. 2016
+Oct. 2016
