@@ -84,6 +84,10 @@ save_boot_params_ret:
 1:	msr	vbar_el1, x0
 	mov	x0, #3 << 20
 	msr	cpacr_el1, x0			/* Enable FP/SIMD */
+
+	/* I found CA72 hangs without the following code.  Why?? */
+	mrs	x0, sctlr_el1
+	msr	sctlr_el1, x0
 0:
 
 	/* Apply ARM core specific erratas */
