@@ -60,14 +60,13 @@ int uniphier_rom_get_mmc_funcptr(int (**send_cmd)(u32, u32),
 	return 0;
 }
 
-static int spl_board_load_image(struct spl_image_info *spl_image,
-				struct spl_boot_device *bootdev)
+int uniphier_spl_emmc_load_image(struct spl_image_info *spl_image,
+				 u32 dev_addr)
 {
 	int (*send_cmd)(u32 cmd, u32 arg);
 	int (*card_blockaddr)(u32 rca);
 	int (*switch_part)(int part);
 	int (*load_image)(u32 dev_addr, uintptr_t load_addr, u32 block_cnt);
-	u32 dev_addr = CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR;
 	const u32 rca = 0x1000; /* RCA assigned by Boot ROM */
 	int ret;
 
@@ -103,16 +102,6 @@ static int spl_board_load_image(struct spl_image_info *spl_image,
 	if (ret)
 		printf("failed to switch partition\n");
 
-	ret = (*load_image)(dev_addr, CONFIG_SYS_TEXT_BASE, 1);
-	if (ret) {
-		printf("failed to load image\n");
-		return ret;
-	}
-
-	ret = spl_parse_image_header(spl_image, (void *)CONFIG_SYS_TEXT_BASE);
-	if (ret)
-		return ret;
-
 	ret = (*load_image)(dev_addr, spl_image->load_addr,
 			    spl_image->size / 512);
 	if (ret) {
@@ -121,5 +110,14 @@ static int spl_board_load_image(struct spl_image_info *spl_image,
 	}
 
 	return 0;
+}
+
+static int spl_board_load_image(struct spl_image_info *spl_image,
+				struct spl_boot_device *bootdev)
+{
+	spl_set_header_raw_uboot(spl_image);
+
+	return uniphier_spl_emmc_load_image(spl_image,
+				CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR);
 }
 SPL_LOAD_IMAGE_METHOD("eMMC", 0, BOOT_DEVICE_BOARD, spl_board_load_image);
