@@ -265,12 +265,18 @@
 		"tftpboot u-boot-spl.bin &&"			\
 		"mmc write $loadaddr 0 80 &&"			\
 		"tftpboot u-boot.bin &&"			\
-		"mmc write $loadaddr 80 780\0"			\
+		"mmc write $loadaddr 80 380\0"			\
 	"nandupdate=nand erase 0 0x00100000 &&"			\
 		"tftpboot u-boot-spl.bin &&"			\
 		"nand write $loadaddr 0 0x00010000 &&"		\
 		"tftpboot u-boot.bin &&"			\
-		"nand write $loadaddr 0x00010000 0x000f0000\0"	\
+		"nand write $loadaddr 0x00010000 0x00070000\0"	\
+	"sramatfupdate=setexpr tmp_addr $nor_base + 0xd0000 &&"	\
+		"tftpboot $tmp_addr bl31.bin\0"			\
+	"emmcatfupdate=mmcsetn &&"				\
+		"mmc partconf $mmc_first_dev 0 1 1 &&"		\
+		"tftpboot bl31.bin &&"				\
+		"mmc write $loadaddr 500 80\0"			\
 	LINUXBOOT_ENV_SETTINGS
 
 #define CONFIG_SYS_BOOTMAPSZ			0x20000000
