@@ -65,6 +65,11 @@ const int tof_shift[RANK_BLOCKS_TR][2] = { {-50, -50}, {-50, -50} };
 #define PHY_DSWBD_MASK		0x3F000000	/* bit[29:24] */
 #define PHY_DSDQOE_MASK		0x00000FFF
 
+static inline int ddrphy_get_rank(int dx)
+{
+	return dx / 2;
+}
+
 static void ddrphy_maskwritel(u32 data, u32 mask, void *addr)
 {
 	u32 value;
@@ -306,6 +311,10 @@ static void ddrphy_training(void __iomem *phy_base)
 
 static void ddrphy_init(void __iomem *phy_base, enum dram_freq freq)
 {
+	void __iomem *zq_base = phy_base + PHY_ZQ_BASE;
+	void __iomem *dx_base = phy_base + PHY_DX_BASE;
+	int dx, rank;
+
 	writel(0x40000000, phy_base + PHY_PIR);
 	writel(0x0300C4F1, phy_base + PHY_PGCR1);
 	writel(0x0C807D04, phy_base + PHY_PTR0);
@@ -326,9 +335,13 @@ static void ddrphy_init(void __iomem *phy_base, enum dram_freq freq)
 	while (!(readl(phy_base + PHY_PGSR0) & PHY_PGSR0_IDONE))
 		cpu_relax();
 
-	writel(0x00000059, phy_base + PHY_ZQ0CR1);
-	writel(0x00000019, phy_base + PHY_ZQ1CR1);
-	writel(0x00000019, phy_base + PHY_ZQ2CR1);
+	writel(0x00000059, zq_base + PHY_ZQ_CR1);		/* ZQ0: AC */
+	zq_base += PHY_ZQ_STRIDE;
+	for (i = 0; i < 2; i++) {
+		writel(0x00000019, zq_base + PHY_ZQ_CR1);	/* ZQ1,2: DX */
+		zq_base += PHY_ZQ_STRIDE;
+	}
+
 	writel(0x30FC6C20, phy_base + PHY_PGCR2);
 
 	ddrphy_set_ckoffset_qoffset(119, 0, 0, 1, phy_base);
@@ -349,14 +362,14 @@ static void ddrphy_init(void __iomem *phy_base, enum dram_freq freq)
 	ddrphy_set_oe_delay_dx(2, 0, 0, 1, phy_base);
 	ddrphy_set_oe_delay_dx(3, 0, 0, 1, phy_base);
 
-	writel(0x44000E81, phy_base + PHY_DX0GCR);
-	writel(0x44000E81, phy_base + PHY_DX1GCR);
-	writel(0x44000E81, phy_base + PHY_DX2GCR);
-	writel(0x44000E81, phy_base + PHY_DX3GCR);
-	writel(0x00055002, phy_base + PHY_DX0GTR);
-	writel(0x00055002, phy_base + PHY_DX1GTR);
-	writel(0x00055010, phy_base + PHY_DX2GTR);
-	writel(0x00055010, phy_base + PHY_DX3GTR);
+	for (dx = 0; dx < 4; dx++) {
+		rank = ddrphy_get_rank(dx);
+
+		writel(0x44000E81, dx_base + PHY_DX_GCR);
+		writel(0x00055000 + 2 << (3 * rank), dx_base + PHY_DX_GTR);
+		dx_base += PHY_DX_STRIDE;
+	}
+
 	writel(0x930035C7, phy_base + PHY_DTCR);
 	writel(0x00000003, phy_base + PHY_PIR);
 	readl(phy_base + PHY_PIR);
