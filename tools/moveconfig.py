@@ -840,6 +840,19 @@ class KconfigParser:
 
         return log
 
+class DummyParser:
+    def __init__(self):
+        pass
+
+    def get_cross_compile(self):
+        return ""
+
+    def update_dotconfig(self):
+        return (False, False, "")
+
+    def check_defconfig(self):
+        return ""
+
 class Slot:
 
     """A slot to store a subprocess.
@@ -867,7 +880,9 @@ class Slot:
         self.devnull = devnull
         self.make_cmd = (make_cmd, 'O=' + self.build_dir)
         self.reference_src_dir = reference_src_dir
-        self.parser = KconfigParser(configs, options, self.build_dir)
+        self.skip_autoconf = False if configs else True
+        self.parser = KconfigParser(configs, options, self.build_dir) \
+                      if configs else DummyParser()
         self.state = STATE_IDLE
         self.failed_boards = set()
         self.suspicious_boards = set()
@@ -934,7 +949,8 @@ class Slot:
         if self.ps.poll() != 0:
             self.handle_error()
         elif self.state == STATE_DEFCONFIG:
-            if self.reference_src_dir and not self.current_src_dir:
+            if (self.reference_src_dir and not self.current_src_dir) or \
+               self.skip_autoconf:
                 self.do_savedefconfig()
             else:
                 self.do_autoconf()
@@ -1286,6 +1302,10 @@ def main():
 
     (options, configs) = parser.parse_args()
 
+    if options.git_ref and not options.force_sync:
+        print "info: --force-sync is impled by --git-ref"
+        options.force_sync = True
+
     if len(configs) == 0 and not options.force_sync:
         parser.print_usage()
         sys.exit(1)
@@ -1298,7 +1318,8 @@ def main():
 
     if not options.cleanup_headers_only:
         check_clean_directory()
-        update_cross_compile(options.color)
+        if configs:
+            update_cross_compile(options.color)
         move_config(configs, options)
 
     if configs:
