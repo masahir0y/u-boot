@@ -68,15 +68,15 @@ static inline phys_addr_t virt_to_phys(void * vaddr)
  * read/writes.  We define __arch_*[bl] here, and leave __arch_*w
  * to the architecture specific code.
  */
-#define __arch_getb(a)			(*(volatile unsigned char *)(a))
-#define __arch_getw(a)			(*(volatile unsigned short *)(a))
-#define __arch_getl(a)			(*(volatile unsigned int *)(a))
-#define __arch_getq(a)			(*(volatile unsigned long long *)(a))
+#define __arch_getb(a)			(*(volatile unsigned char __force *)(a))
+#define __arch_getw(a)			(*(volatile unsigned short __force *)(a))
+#define __arch_getl(a)			(*(volatile unsigned int __force *)(a))
+#define __arch_getq(a)			(*(volatile unsigned long long __force *)(a))
 
-#define __arch_putb(v,a)		(*(volatile unsigned char *)(a) = (v))
-#define __arch_putw(v,a)		(*(volatile unsigned short *)(a) = (v))
-#define __arch_putl(v,a)		(*(volatile unsigned int *)(a) = (v))
-#define __arch_putq(v,a)		(*(volatile unsigned long long *)(a) = (v))
+#define __arch_putb(v,a)		(*(volatile unsigned char __force *)(a) = (v))
+#define __arch_putw(v,a)		(*(volatile unsigned short __force *)(a) = (v))
+#define __arch_putl(v,a)		(*(volatile unsigned int __force *)(a) = (v))
+#define __arch_putq(v,a)		(*(volatile unsigned long long __force *)(a) = (v))
 
 static inline void __raw_writesb(unsigned long addr, const void *data,
 				 int bytelen)
