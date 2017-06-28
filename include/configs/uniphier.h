@@ -97,6 +97,16 @@
 #define CONFIG_SYS_LOAD_ADDR		0x85000000
 #define CONFIG_SYS_BOOTM_LEN		(32 << 20)
 
+#define CONFIG_PREBOOT			"run pre_$bootmode"
+
+#ifdef CONFIG_PREBOOT
+#define PREBOOT_ENV_SETTINGS \
+	"pre_emmcboot=echo hello world\0" \
+	"pre_nandboot=echo hello world\0"
+#else
+#define PREBOOT_ENV_SETTINGS
+#endif
+
 #if defined(CONFIG_ARM64)
 /* ARM Trusted Firmware */
 #define BOOT_IMAGES \
@@ -212,6 +222,7 @@
 		"usb write $loadaddr 0 100 && " \
 		"tftpboot $third_image && " \
 		"usb write $loadaddr 100 f00\0" \
+	PREBOOT_ENV_SETTINGS \
 	BOOT_IMAGES \
 	LINUXBOOT_ENV_SETTINGS \
 	BOOTENV
