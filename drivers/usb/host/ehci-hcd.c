@@ -1608,6 +1608,7 @@ int ehci_register(struct udevice *dev, struct ehci_hccr *hccr,
 	      dev->name, ctrl, hccr, hcor, init);
 
 	priv->desc_before_addr = true;
+	priv->host_if = USB_HOST_EHCI;
 
 	ehci_setup_ops(ctrl, ops);
 	ctrl->hccr = hccr;

@@ -1247,6 +1247,7 @@ int xhci_register(struct udevice *dev, struct xhci_hccr *hccr,
 	 * of that is done for XHCI unlike EHCI.
 	 */
 	priv->desc_before_addr = false;
+	priv->host_if = USB_HOST_XHCI;
 
 	ret = xhci_reset(hcor);
 	if (ret)

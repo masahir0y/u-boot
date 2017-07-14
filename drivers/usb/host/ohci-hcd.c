@@ -2193,6 +2193,7 @@ int ohci_register(struct udevice *dev, struct ohci_regs *regs)
 	u32 reg;
 
 	priv->desc_before_addr = true;
+	priv->host_if = USB_HOST_OHCI;
 
 	ohci->regs = regs;
 	ohci->hcca = memalign(256, sizeof(struct ohci_hcca));

@@ -1109,7 +1109,7 @@ static unsigned long usb_stor_read(struct blk_desc *block_dev, lbaint_t blknr,
 				   lbaint_t blkcnt, void *buffer)
 #endif
 {
-	lbaint_t start, blks;
+	lbaint_t start, blks, max_xfer_blk;
 	uintptr_t buf_addr;
 	unsigned short smallblks;
 	struct usb_device *udev;
@@ -1118,6 +1118,7 @@ static unsigned long usb_stor_read(struct blk_desc *block_dev, lbaint_t blknr,
 	struct scsi_cmd *srb = &usb_ccb;
 #ifdef CONFIG_BLK
 	struct blk_desc *block_dev;
+	struct usb_bus_priv *bus_priv;
 #endif
 
 	if (blkcnt == 0)
@@ -1127,6 +1128,9 @@ static unsigned long usb_stor_read(struct blk_desc *block_dev, lbaint_t blknr,
 	block_dev = dev_get_uclass_platdata(dev);
 	udev = dev_get_parent_priv(dev_get_parent(dev));
 	debug("\nusb_read: udev %d\n", block_dev->devnum);
+
+	bus_priv = dev_get_uclass_priv(dev_get_parent(dev_get_parent(dev_get_parent(dev))));
+	max_xfer_blk = bus_priv->host_if == USB_HOST_EHCI ? 65535 : 2048;
 #else
 	debug("\nusb_read: udev %d\n", block_dev->devnum);
 	udev = usb_dev_desc[block_dev->devnum].priv;
@@ -1134,6 +1138,7 @@ static unsigned long usb_stor_read(struct blk_desc *block_dev, lbaint_t blknr,
 		debug("%s: No device\n", __func__);
 		return 0;
 	}
+	max_xfer_blk = USB_MAX_XFER_BLK;
 #endif
 	ss = (struct us_data *)udev->privptr;
 
@@ -1150,12 +1155,12 @@ static unsigned long usb_stor_read(struct blk_desc *block_dev, lbaint_t blknr,
 		/* XXX need some comment here */
 		retry = 2;
 		srb->pdata = (unsigned char *)buf_addr;
-		if (blks > USB_MAX_XFER_BLK)
-			smallblks = USB_MAX_XFER_BLK;
+		if (blks > max_xfer_blk)
+			smallblks = max_xfer_blk;
 		else
 			smallblks = (unsigned short) blks;
 retry_it:
-		if (smallblks == USB_MAX_XFER_BLK)
+		if (smallblks == max_xfer_blk)
 			usb_show_progress();
 		srb->datalen = block_dev->blksz * smallblks;
 		srb->pdata = (unsigned char *)buf_addr;
@@ -1178,7 +1183,7 @@ retry_it:
 	      start, smallblks, buf_addr);
 
 	usb_disable_asynch(0); /* asynch transfer allowed */
-	if (blkcnt >= USB_MAX_XFER_BLK)
+	if (blkcnt >= max_xfer_blk)
 		debug("\n");
 	return blkcnt;
 }
@@ -1191,7 +1196,7 @@ static unsigned long usb_stor_write(struct blk_desc *block_dev, lbaint_t blknr,
 				    lbaint_t blkcnt, const void *buffer)
 #endif
 {
-	lbaint_t start, blks;
+	lbaint_t start, blks, max_xfer_blk;
 	uintptr_t buf_addr;
 	unsigned short smallblks;
 	struct usb_device *udev;
@@ -1200,6 +1205,7 @@ static unsigned long usb_stor_write(struct blk_desc *block_dev, lbaint_t blknr,
 	struct scsi_cmd *srb = &usb_ccb;
 #ifdef CONFIG_BLK
 	struct blk_desc *block_dev;
+	struct usb_bus_priv *bus_priv;
 #endif
 
 	if (blkcnt == 0)
@@ -1210,6 +1216,9 @@ static unsigned long usb_stor_write(struct blk_desc *block_dev, lbaint_t blknr,
 	block_dev = dev_get_uclass_platdata(dev);
 	udev = dev_get_parent_priv(dev_get_parent(dev));
 	debug("\nusb_read: udev %d\n", block_dev->devnum);
+
+	bus_priv = dev_get_uclass_priv(dev_get_parent(dev_get_parent(dev_get_parent(dev))));
+	max_xfer_blk = bus_priv->host_if == USB_HOST_EHCI ? 65535 : 20;
 #else
 	debug("\nusb_read: udev %d\n", block_dev->devnum);
 	udev = usb_dev_desc[block_dev->devnum].priv;
@@ -1217,6 +1226,7 @@ static unsigned long usb_stor_write(struct blk_desc *block_dev, lbaint_t blknr,
 		debug("%s: No device\n", __func__);
 		return 0;
 	}
+	max_xfer_blk = USB_MAX_XFER_BLK;
 #endif
 	ss = (struct us_data *)udev->privptr;
 
@@ -1236,12 +1246,12 @@ static unsigned long usb_stor_write(struct blk_desc *block_dev, lbaint_t blknr,
 		 */
 		retry = 2;
 		srb->pdata = (unsigned char *)buf_addr;
-		if (blks > USB_MAX_XFER_BLK)
-			smallblks = USB_MAX_XFER_BLK;
+		if (blks > max_xfer_blk)
+			smallblks = max_xfer_blk;
 		else
 			smallblks = (unsigned short) blks;
 retry_it:
-		if (smallblks == USB_MAX_XFER_BLK)
+		if (smallblks == max_xfer_blk)
 			usb_show_progress();
 		srb->datalen = block_dev->blksz * smallblks;
 		srb->pdata = (unsigned char *)buf_addr;
@@ -1263,7 +1273,7 @@ retry_it:
 	      PRIxPTR "\n", start, smallblks, buf_addr);
 
 	usb_disable_asynch(0); /* asynch transfer allowed */
-	if (blkcnt >= USB_MAX_XFER_BLK)
+	if (blkcnt >= max_xfer_blk)
 		debug("\n");
 	return blkcnt;
 

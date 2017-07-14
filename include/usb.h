@@ -631,6 +631,14 @@ struct usb_dev_platdata {
 	int configno;
 };
 
+enum usb_host_if {
+	USB_HOST_UNKNOWN,
+	USB_HOST_OHCI,
+	USB_HOST_UHCI,
+	USB_HOST_EHCI,
+	USB_HOST_XHCI,
+};
+
 /**
  * struct usb_bus_priv - information about the USB controller
  *
@@ -650,6 +658,7 @@ struct usb_bus_priv {
 	int next_addr;
 	bool desc_before_addr;
 	bool companion;
+	enum usb_host_if host_if;
 };
 
 /**
