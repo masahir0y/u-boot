@@ -130,16 +130,21 @@ fit_check_sign-objs   := $(dumpimage-mkimage-objs) fit_check_sign.o
 # calling setup. This directory is safe to write to. This ensures that we get
 # all three files in $(obj)/tools: _libfdt.so, libfdt.py and libfdt_wrap.c
 # The latter is a temporary file which we could actually remove.
-tools/_libfdt.so: $(LIBFDT_SRCS) $(LIBFDT_SWIG)
-	cp $(LIBFDT_SWIG) tools/.
-	unset CC; \
-	unset CROSS_COMPILE; \
+
+$(obj)/libfdt.i: $(srctree)/lib/libfdt/pylibfdt/libfdt.i
+	$(call cmd,shipped)
+
+quiet_cmd_pymod = PYMOD  $@
+cmd_pymod = unset CC CROSS_COMPILE; \
 	LDFLAGS="$(HOSTLDFLAGS)" CFLAGS= VERSION="u-boot-$(UBOOTVERSION)" \
-		CPPFLAGS="$(_hostc_flags)" OBJDIR=tools \
-		SOURCES="$(LIBFDT_SRCS) tools/libfdt.i" \
-		SWIG_OPTS="-I$(srctree)/lib/libfdt -I$(srctree)/lib" \
-		$(PYTHON) $(libfdt_tree)/pylibfdt/setup.py build_ext \
-			--build-lib tools
+	CPPFLAGS="$(_hostc_flags)" OBJDIR=tools \
+	SOURCES="$(filter %.c %.o, $^)" \
+	SWIG_OPTS="-I$(srctree)/lib/libfdt -I$(srctree)/lib" \
+	$(PYTHON) $(libfdt_tree)/pylibfdt/setup.py build_ext --build-lib tools
+
+tools/_libfdt.so: $(addprefix $(srctree)/lib/libfdt/,$(LIBFDT_CSRCS)) \
+			$(obj)/libfdt.i FORCE
+	$(call if_changed,pymo)
 
 ifneq ($(CONFIG_MX23)$(CONFIG_MX28),)
 # Add CONFIG_MXS into host CFLAGS, so we can check whether or not register
