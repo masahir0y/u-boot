@@ -134,17 +134,16 @@ fit_check_sign-objs   := $(dumpimage-mkimage-objs) fit_check_sign.o
 $(obj)/libfdt.i: $(srctree)/lib/libfdt/pylibfdt/libfdt.i
 	$(call cmd,shipped)
 
-quiet_cmd_pymod = PYMOD  $@
-cmd_pymod = unset CC CROSS_COMPILE; \
-	LDFLAGS="$(HOSTLDFLAGS)" CFLAGS= VERSION="u-boot-$(UBOOTVERSION)" \
-	CPPFLAGS="$(_hostc_flags)" OBJDIR=tools \
-	SOURCES="$(filter %.c %.o, $^)" \
+quiet_cmd_pymod = PYMOD   $@
+cmd_pymod = CC= CROSS_COMPILE= LDFLAGS="$(HOSTLDFLAGS)" CFLAGS= \
+	VERSION="u-boot-$(UBOOTVERSION)" CPPFLAGS="$(_hostc_flags)"
+	OBJDIR=tools SOURCES="$(filter %.c %.o, $^)" \
 	SWIG_OPTS="-I$(srctree)/lib/libfdt -I$(srctree)/lib" \
-	$(PYTHON) $(libfdt_tree)/pylibfdt/setup.py build_ext --build-lib tools
+	$(PYTHON) $(libfdt_tree)/pylibfdt/setup.py --quiet build_ext --build-lib tools
 
 tools/_libfdt.so: $(addprefix $(srctree)/lib/libfdt/,$(LIBFDT_CSRCS)) \
 			$(obj)/libfdt.i FORCE
-	$(call if_changed,pymo)
+	$(call if_changed,pymod)
 
 ifneq ($(CONFIG_MX23)$(CONFIG_MX28),)
 # Add CONFIG_MXS into host CFLAGS, so we can check whether or not register
