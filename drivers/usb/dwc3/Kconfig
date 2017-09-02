@@ -7,6 +7,19 @@ config USB_DWC3
 
 if USB_DWC3
 
+<<<<<<< HEAD
+=======
+choice
+	bool "DWC3 Mode Selection"
+
+config USB_DWC3_HOST
+	bool "Host only mode"
+	depends on USB_HOST
+	help
+	  Select this when you want to use DWC3 in host mode only,
+	  thereby the gadget feature will be regressed.
+
+>>>>>>> usb: dwc3: fix Kconfig dependency more for dwc3 host mode
 config USB_DWC3_GADGET
 	bool "USB Gadget support for DWC3"
 	default y
