@@ -334,6 +334,39 @@ static const struct udevice_id uniphier_clk_match[] = {
 		.compatible = "socionext,uniphier-pxs3-sd-clock",
 		.data = (ulong)uniphier_mio_clk_data,
 	},
+	/* Peripheral clock */
+	{
+		.compatible = "socionext,uniphier-ld4-peri-clock",
+		.data = (ulong)uniphier_ld4_peri_clk_data,
+	},
+	{
+		.compatible = "socionext,uniphier-pro4-peri-clock",
+		.data = (ulong)uniphier_pro4_peri_clk_data,
+	},
+	{
+		.compatible = "socionext,uniphier-sld8-peri-clock",
+		.data = (ulong)uniphier_sld8_peri_clk_data,
+	},
+	{
+		.compatible = "socionext,uniphier-pro5-peri-clock",
+		.data = (ulong)uniphier_pro4_peri_clk_data,
+	},
+	{
+		.compatible = "socionext,uniphier-pxs2-peri-clock",
+		.data = (ulong)uniphier_pxs2_peri_clk_data,
+	},
+	{
+		.compatible = "socionext,uniphier-ld11-peri-clock",
+		.data = (ulong)uniphier_ld11_peri_clk_data,
+	},
+	{
+		.compatible = "socionext,uniphier-ld20-peri-clock",
+		.data = (ulong)uniphier_ld11_peri_clk_data,
+	},
+	{
+		.compatible = "socionext,uniphier-pxs3-peri-clock",
+		.data = (ulong)uniphier_ld11_peri_clk_data,
+	},
 	{ /* sentinel */ }
 };
 
