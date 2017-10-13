@@ -11,6 +11,7 @@
 #include <linux/io.h>
 #include <linux/sizes.h>
 #include <linux/types.h>
+#include <clk.h>
 #include <dm.h>
 #include <fdtdec.h>
 #include <i2c.h>
@@ -36,8 +37,6 @@ struct uniphier_i2c_regs {
 	u32 setup;			/* setup time control */
 };
 
-#define IOBUS_FREQ	100000000
-
 struct uniphier_i2c_priv {
 	struct udevice *dev;
 	struct uniphier_i2c_regs __iomem *regs;	/* register base */
@@ -49,6 +48,8 @@ static int uniphier_i2c_probe(struct udevice *dev)
 {
 	fdt_addr_t addr;
 	struct uniphier_i2c_priv *priv = dev_get_priv(dev);
+	struct clk clk;
+	int ret;
 
 	addr = devfdt_get_addr(dev);
 	if (addr == FDT_ADDR_T_NONE)
@@ -58,7 +59,19 @@ static int uniphier_i2c_probe(struct udevice *dev)
 	if (!priv->regs)
 		return -ENOMEM;
 
-	priv->input_clk = IOBUS_FREQ;
+	ret = clk_get_by_index(dev, 0, &clk);
+	if (ret < 0) {
+		dev_err(dev, "failed to get clock\n");
+		return ret;
+	}
+
+	ret = clk_enable(&clk);
+	if (ret) {
+		dev_err(dev, "failed to enable clock\n");
+		return ret;
+	}
+
+	priv->input_clk = clk_get_rate(&clk);
 
 	priv->dev = dev;
 
