@@ -242,10 +242,12 @@ static int fit_image_process_sig(const char *keydir, void *keydest,
 	/* Get keyname again, as FDT has changed and invalidated our pointer */
 	info.keyname = fdt_getprop(fit, noffset, "key-name-hint", NULL);
 
-	if (keydest)
+	if (keydest) {
 		ret = info.crypto->add_verify_data(&info, keydest);
-	else
+	} else {
+		printf("Destination for public key is not specified\n");
 		return -1;
+	}
 
 	/*
 	 * Write the public key into the supplied FDT file; this might fail
