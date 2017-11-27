@@ -76,21 +76,6 @@ typedef volatile unsigned char	vu_char;
 #define warn_non_spl(fmt, args...)			\
 	debug_cond(!_SPL_BUILD, fmt, ##args)
 
-/*
- * An assertion is run-time check done in debug mode only. If DEBUG is not
- * defined then it is skipped. If DEBUG is defined and the assertion fails,
- * then it calls panic*( which may or may not reset/halt U-Boot (see
- * CONFIG_PANIC_HANG), It is hoped that all failing assertions are found
- * before release, and after release it is hoped that they don't matter. But
- * in any case these failing assertions cannot be fixed with a reset (which
- * may just do the same assertion again).
- */
-void __assert_fail(const char *assertion, const char *file, unsigned line,
-		   const char *function);
-#define assert(x) \
-	({ if (!(x) && _DEBUG) \
-		__assert_fail(#x, __FILE__, __LINE__, __func__); })
-
 typedef void (interrupt_handler_t)(void *);
 
 #include <asm/u-boot.h> /* boot information for Linux kernel */
