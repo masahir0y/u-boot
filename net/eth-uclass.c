@@ -42,7 +42,7 @@ static struct eth_uclass_priv *eth_get_uclass_priv(void)
 	struct uclass *uc;
 
 	uclass_get(UCLASS_ETH, &uc);
-	assert(uc);
+	BUG_ON(!uc);
 	return uc->priv;
 }
 

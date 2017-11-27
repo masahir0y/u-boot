@@ -147,7 +147,7 @@ static ulong rv1108_saradc_set_clk(struct rv1108_cru *cru, uint hz)
 	int src_clk_div;
 
 	src_clk_div = DIV_ROUND_UP(OSC_HZ, hz) - 1;
-	assert(src_clk_div < 128);
+	BUG_ON(src_clk_div >= 128);
 
 	rk_clrsetreg(&cru->clksel_con[22],
 		     CLK_SARADC_DIV_CON_MASK,

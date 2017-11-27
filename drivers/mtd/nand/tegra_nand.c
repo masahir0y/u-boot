@@ -259,7 +259,7 @@ static void nand_command(struct mtd_info *mtd, unsigned int command,
 
 	/* Emulate NAND_CMD_READOOB */
 	if (command == NAND_CMD_READOOB) {
-		assert(mtd->writesize != 0);
+		BUG_ON(mtd->writesize == 0);
 		column += mtd->writesize;
 		command = NAND_CMD_READ0;
 	}

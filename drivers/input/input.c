@@ -248,7 +248,7 @@ static struct input_key_xlate *process_modifier(struct input_config *config,
 	int i;
 
 	/* Start with the main table, and see what modifiers change it */
-	assert(config->num_tables > 0);
+	BUG_ON(0 >= config->num_tables);
 	table = &config->table[0];
 	for (i = 1; i < config->num_tables; i++) {
 		struct input_key_xlate *tab = &config->table[i];
@@ -356,7 +356,7 @@ static int sort_array_by_ordering(int *dest, int count, int *order,
 		if (array_search(order, ocount, temp[i]) == -1)
 			dest[dest_count++] = temp[i];
 	}
-	assert(dest_count == count);
+	BUG_ON(dest_count != count);
 	return same;
 }
 

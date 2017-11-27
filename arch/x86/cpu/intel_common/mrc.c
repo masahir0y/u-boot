@@ -42,7 +42,7 @@ ulong mrc_common_board_get_usable_ram_top(ulong total_size)
 	}
 
 	/* If no suitable area was found, return an error. */
-	assert(largest);
+	BUG_ON(!largest);
 	if (!largest || largest->size < (2 << 20))
 		panic("No available memory found for relocation");
 

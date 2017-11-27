@@ -13,12 +13,12 @@
 
 int buf_init (circbuf_t * buf, unsigned int size)
 {
-	assert (buf != NULL);
+	BUG_ON(buf == NULL);
 
 	buf->size = 0;
 	buf->totalsize = size;
 	buf->data = (char *) malloc (sizeof (char) * size);
-	assert (buf->data != NULL);
+	BUG_ON(buf->data == NULL);
 
 	buf->top = buf->data;
 	buf->tail = buf->data;
@@ -29,8 +29,8 @@ int buf_init (circbuf_t * buf, unsigned int size)
 
 int buf_free (circbuf_t * buf)
 {
-	assert (buf != NULL);
-	assert (buf->data != NULL);
+	BUG_ON(buf == NULL);
+	BUG_ON(buf->data == NULL);
 
 	free (buf->data);
 	memset (buf, 0, sizeof (circbuf_t));
@@ -43,8 +43,8 @@ int buf_pop (circbuf_t * buf, char *dest, unsigned int len)
 	unsigned int i;
 	char *p;
 
-	assert (buf != NULL);
-	assert (dest != NULL);
+	BUG_ON(buf == NULL);
+	BUG_ON(dest == NULL);
 
 	p = buf->top;
 
@@ -73,8 +73,8 @@ int buf_push (circbuf_t * buf, const char *src, unsigned int len)
 	unsigned int i;
 	char *p;
 
-	assert (buf != NULL);
-	assert (src != NULL);
+	BUG_ON(buf == NULL);
+	BUG_ON(src == NULL);
 
 	p = buf->tail;
 

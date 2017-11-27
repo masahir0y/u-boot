@@ -51,7 +51,7 @@ static int i2c_setup_offset(struct dm_i2c_chip *chip, uint offset,
 	msg->buf = offset_buf;
 	if (!chip->offset_len)
 		return -EADDRNOTAVAIL;
-	assert(chip->offset_len <= I2C_MAX_OFFSET_LEN);
+	BUG_ON(chip->offset_len > I2C_MAX_OFFSET_LEN);
 	offset_len = chip->offset_len;
 	while (offset_len--)
 		*offset_buf++ = offset >> (8 * offset_len);

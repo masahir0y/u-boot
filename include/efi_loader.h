@@ -25,7 +25,7 @@ const char *__efi_nesting_dec(void);
  * Enter the u-boot world from UEFI:
  */
 #define EFI_ENTRY(format, ...) do { \
-	assert(__efi_entry_check()); \
+	BUG_ON(!__efi_entry_check()); \
 	debug("%sEFI: Entry %s(" format ")\n", __efi_nesting_inc(), \
 		__func__, ##__VA_ARGS__); \
 	} while(0)
@@ -37,7 +37,7 @@ const char *__efi_nesting_dec(void);
 	typeof(ret) _r = ret; \
 	debug("%sEFI: Exit: %s: %u\n", __efi_nesting_dec(), \
 		__func__, (u32)((uintptr_t) _r & ~EFI_ERROR_MASK)); \
-	assert(__efi_exit_check()); \
+	BUG_ON(!__efi_exit_check()); \
 	_r; \
 	})
 
@@ -46,9 +46,9 @@ const char *__efi_nesting_dec(void);
  */
 #define EFI_CALL(exp) ({ \
 	debug("%sEFI: Call: %s\n", __efi_nesting_inc(), #exp); \
-	assert(__efi_exit_check()); \
+	BUG_ON(!__efi_exit_check()); \
 	typeof(exp) _r = exp; \
-	assert(__efi_entry_check()); \
+	BUG_ON(!__efi_entry_check()); \
 	debug("%sEFI: %lu returned by %s\n", __efi_nesting_dec(), \
 	      (unsigned long)((uintptr_t)_r & ~EFI_ERROR_MASK), #exp); \
 	_r; \
@@ -59,9 +59,9 @@ const char *__efi_nesting_dec(void);
  */
 #define EFI_CALL_VOID(exp) do { \
 	debug("%sEFI: Call: %s\n", __efi_nesting_inc(), #exp); \
-	assert(__efi_exit_check()); \
+	BUG_ON(!__efi_exit_check()); \
 	exp; \
-	assert(__efi_entry_check()); \
+	BUG_ON(!__efi_entry_check()); \
 	debug("%sEFI: Return From: %s\n", __efi_nesting_dec(), #exp); \
 	} while(0)
 

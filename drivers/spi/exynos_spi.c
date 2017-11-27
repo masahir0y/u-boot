@@ -86,7 +86,7 @@ static void spi_request_bytes(struct exynos_spi *regs, int count, int step)
 		writel(0, &regs->swap_cfg);
 	}
 
-	assert(count && count < (1 << 16));
+	BUG_ON(!(count && count < (1 << 16)));
 	setbits_le32(&regs->ch_cfg, SPI_CH_RST);
 	clrbits_le32(&regs->ch_cfg, SPI_CH_RST);
 
@@ -183,7 +183,7 @@ static int spi_rx_tx(struct exynos_spi_priv *priv, int todo,
 			 * and make sure that we transmit dummy bytes too, to
 			 * keep things going.
 			 */
-			assert(!out_bytes);
+			BUG_ON(out_bytes);
 			out_bytes = in_bytes;
 			toread = in_bytes;
 			txp = NULL;
@@ -355,7 +355,7 @@ static int exynos_spi_xfer(struct udevice *dev, unsigned int bitlen,
 	if ((flags & SPI_XFER_END) && !(priv->mode & SPI_SLAVE)) {
 		spi_cs_deactivate(dev);
 		if (priv->skip_preamble) {
-			assert(!priv->skip_preamble);
+			BUG_ON(priv->skip_preamble);
 			debug("Failed to complete premable transaction\n");
 			ret = -1;
 		}

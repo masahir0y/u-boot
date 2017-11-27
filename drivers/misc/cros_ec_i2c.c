@@ -135,8 +135,8 @@ static int cros_ec_i2c_command(struct udevice *udev, uint8_t cmd,
 		debug("%s: Cannot receive %d bytes\n", __func__, din_len);
 		return -1;
 	}
-	assert(dout_len >= 0);
-	assert(dinp);
+	BUG_ON(0 > dout_len);
+	BUG_ON(!dinp);
 
 	i2c_msg[0].addr = chip->chip_addr;
 	i2c_msg[0].len = out_bytes;

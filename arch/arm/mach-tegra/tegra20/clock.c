@@ -407,9 +407,9 @@ u32 *get_periph_source_reg(enum periph_id periph_id)
 			(struct clk_rst_ctlr *)NV_PA_CLK_RST_BASE;
 	enum periphc_internal_id internal_id;
 
-	assert(clock_periph_id_isvalid(periph_id));
+	BUG_ON(!clock_periph_id_isvalid(periph_id));
 	internal_id = periph_id_to_internal_id[periph_id];
-	assert(internal_id != -1);
+	BUG_ON(internal_id == -1);
 	return &clkrst->crc_clk_src[internal_id];
 }
 
@@ -483,7 +483,7 @@ int get_periph_clock_source(enum periph_id periph_id,
 	int mux, err;
 
 	err = get_periph_clock_info(periph_id, mux_bits, divider_bits, &type);
-	assert(!err);
+	BUG_ON(err);
 
 	for (mux = 0; mux < CLOCK_MAX_MUX; mux++)
 		if (clock_source[type][mux] == parent)
@@ -494,8 +494,8 @@ int get_periph_clock_source(enum periph_id periph_id,
 	 * which is not in our table. If not, then they are asking for a
 	 * source which this peripheral can't access through its mux.
 	 */
-	assert(type == CLOCK_TYPE_PCXTS);
-	assert(parent == CLOCK_ID_SFROM32KHZ);
+	BUG_ON(type != CLOCK_TYPE_PCXTS);
+	BUG_ON(parent != CLOCK_ID_SFROM32KHZ);
 	if (type == CLOCK_TYPE_PCXTS && parent == CLOCK_ID_SFROM32KHZ)
 		return 4;	/* mux value for this clock */
 
@@ -513,7 +513,7 @@ void clock_set_enable(enum periph_id periph_id, int enable)
 	u32 reg;
 
 	/* Enable/disable the clock to this peripheral */
-	assert(clock_periph_id_isvalid(periph_id));
+	BUG_ON(!clock_periph_id_isvalid(periph_id));
 	reg = readl(clk);
 	if (enable)
 		reg |= PERIPH_MASK(periph_id);
@@ -530,7 +530,7 @@ void reset_set_enable(enum periph_id periph_id, int enable)
 	u32 reg;
 
 	/* Enable/disable reset to the peripheral */
-	assert(clock_periph_id_isvalid(periph_id));
+	BUG_ON(!clock_periph_id_isvalid(periph_id));
 	reg = readl(reset);
 	if (enable)
 		reg |= PERIPH_MASK(periph_id);

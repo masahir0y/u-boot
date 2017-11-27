@@ -333,7 +333,7 @@ int state_setprop(int node, const char *prop_name, const void *data, int size)
 
 struct sandbox_state *state_get_current(void)
 {
-	assert(state);
+	BUG_ON(!state);
 	return state;
 }
 
@@ -367,7 +367,7 @@ int state_init(void)
 
 	state->ram_size = CONFIG_SYS_SDRAM_SIZE;
 	state->ram_buf = os_malloc(state->ram_size);
-	assert(state->ram_buf);
+	BUG_ON(!state->ram_buf);
 
 	state_reset_for_test(state);
 	/*

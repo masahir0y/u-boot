@@ -78,7 +78,7 @@ static const char * const compat_names[COMPAT_COUNT] = {
 const char *fdtdec_get_compatible(enum fdt_compat_id id)
 {
 	/* We allow reading of the 'unknown' ID for testing purposes */
-	assert(id >= 0 && id < COMPAT_COUNT);
+	BUG_ON(!(id >= 0 && id < COMPAT_COUNT));
 	return compat_names[id];
 }
 
@@ -378,7 +378,7 @@ int fdtdec_next_alias(const void *blob, const char *name,
 	int node, err;
 
 	/* snprintf() is not available */
-	assert(strlen(name) < MAX_STR_LEN);
+	BUG_ON(strlen(name) >= MAX_STR_LEN);
 	sprintf(str, "%.*s%d", MAX_STR_LEN, name, *upto);
 	node = fdt_path_offset(blob, str);
 	if (node < 0)
@@ -505,7 +505,7 @@ int fdtdec_add_aliases_for_id(const void *blob, const char *name,
 			if (j == maxcount)
 				break;
 
-			assert(!node_list[i]);
+			BUG_ON(node_list[i]);
 			node_list[i] = nodes[j++];
 			if (i >= num_found)
 				num_found = i + 1;
@@ -585,7 +585,7 @@ int fdtdec_check_fdt(void)
 	 * FDT (prior to console ready) will need to make their own
 	 * arrangements and do their own checks.
 	 */
-	assert(!fdtdec_prepare_fdt());
+	BUG_ON(fdtdec_prepare_fdt());
 	return 0;
 }
 

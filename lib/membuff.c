@@ -25,7 +25,7 @@ static int membuff_putrawflex(struct membuff *mb, int maxlen, bool update,
 	int len;
 
 	/* always write to 'mb->head' */
-	assert(data && offsetp);
+	BUG_ON(!(data && offsetp));
 	*data = &mb->start;
 	*offsetp = mb->head - mb->start;
 
@@ -330,7 +330,7 @@ int membuff_extend_by(struct membuff *mb, int by, int max)
 	char *ptr;
 
 	/* double the buffer size until it is big enough */
-	assert(by >= 0);
+	BUG_ON(0 > by);
 	for (orig = mb->end - mb->start, size = orig; size < orig + by;)
 		size *= 2;
 	if (max != -1)

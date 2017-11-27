@@ -156,8 +156,8 @@ static int compress_using_bzip2(void *in, unsigned long in_size,
 				unsigned long *out_size)
 {
 	/* There is no bzip2 compression in u-boot, so fake it. */
-	assert(in_size == strlen(plain));
-	assert(memcmp(plain, in, in_size) == 0);
+	BUG_ON(in_size != strlen(plain));
+	BUG_ON(memcmp(plain, in, in_size) != 0);
 
 	if (bzip2_compressed_size > out_max)
 		return -1;
@@ -189,8 +189,8 @@ static int compress_using_lzma(void *in, unsigned long in_size,
 			       unsigned long *out_size)
 {
 	/* There is no lzma compression in u-boot, so fake it. */
-	assert(in_size == strlen(plain));
-	assert(memcmp(plain, in, in_size) == 0);
+	BUG_ON(in_size != strlen(plain));
+	BUG_ON(memcmp(plain, in, in_size) != 0);
 
 	if (lzma_compressed_size > out_max)
 		return -1;
@@ -221,8 +221,8 @@ static int compress_using_lzo(void *in, unsigned long in_size,
 			      unsigned long *out_size)
 {
 	/* There is no lzo compression in u-boot, so fake it. */
-	assert(in_size == strlen(plain));
-	assert(memcmp(plain, in, in_size) == 0);
+	BUG_ON(in_size != strlen(plain));
+	BUG_ON(memcmp(plain, in, in_size) != 0);
 
 	if (lzo_compressed_size > out_max)
 		return -1;
@@ -254,8 +254,8 @@ static int compress_using_lz4(void *in, unsigned long in_size,
 			      unsigned long *out_size)
 {
 	/* There is no lz4 compression in u-boot, so fake it. */
-	assert(in_size == strlen(plain));
-	assert(memcmp(plain, in, in_size) == 0);
+	BUG_ON(in_size != strlen(plain));
+	BUG_ON(memcmp(plain, in, in_size) != 0);
 
 	if (lz4_compressed_size > out_max)
 		return -1;

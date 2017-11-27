@@ -165,7 +165,7 @@ slre_dump(const struct slre *r, FILE *fp)
 static void
 set_jump_offset(struct slre *r, int pc, int offset)
 {
-	assert(offset < r->code_size);
+	BUG_ON(offset >= r->code_size);
 
 	if (r->code_size - offset > 0xff)
 		r->err_str = "Jump offset is too big";
@@ -507,8 +507,8 @@ match(const struct slre *r, int pc, const char *s, int len,
 
 	while (res && r->code[pc] != END) {
 
-		assert(pc < r->code_size);
-		assert(pc < (int) (sizeof(r->code) / sizeof(r->code[0])));
+		BUG_ON(pc >= r->code_size);
+		BUG_ON(pc >= (int)(sizeof(r->code) / sizeof(r->code[0])));
 
 		switch (r->code[pc]) {
 		case BRANCH:
@@ -635,7 +635,7 @@ match(const struct slre *r, int pc, const char *s, int len,
 			break;
 		default:
 			printf("unknown cmd (%d) at %d\n", r->code[pc], pc);
-			assert(0);
+			BUG_ON(!0);
 			break;
 		}
 	}

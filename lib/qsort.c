@@ -28,7 +28,7 @@ void qsort(void  *base,
 	char tmp;
 
 	if ((nel > 1) && (width > 0)) {
-		assert(nel <= ((size_t)(-1)) / width); /* check for overflow */
+		BUG_ON(nel > ((size_t)(-1)) / width); /* check for overflow */
 		wgap = 0;
 		do {
 			wgap = 3 * wgap + 1;

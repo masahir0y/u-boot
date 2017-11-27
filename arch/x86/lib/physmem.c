@@ -141,8 +141,7 @@ static void x86_phys_memset_page(phys_addr_t map_addr, uintptr_t offset, int c,
 	const uintptr_t window = LARGE_PAGE_SIZE;
 
 	/* Make sure the window is below U-Boot. */
-	assert(window + LARGE_PAGE_SIZE <
-	       gd->relocaddr - CONFIG_SYS_MALLOC_LEN - CONFIG_SYS_STACK_SIZE);
+	BUG_ON(window + LARGE_PAGE_SIZE >= gd->relocaddr - CONFIG_SYS_MALLOC_LEN - CONFIG_SYS_STACK_SIZE);
 	/* Map the page into the window and then memset the appropriate part. */
 	x86_phys_map_page(window, map_addr, 1);
 	memset((void *)(window + offset), c, size);
@@ -165,7 +164,7 @@ phys_addr_t arch_phys_memset(phys_addr_t start, int c, phys_size_t size)
 		phys_size_t low_size = min(max_addr + 1 - start, size);
 		void *start_ptr = (void *)(uintptr_t)start;
 
-		assert(((phys_addr_t)(uintptr_t)start) == start);
+		BUG_ON(((phys_addr_t)(uintptr_t)start) != start);
 		memset(start_ptr, c, low_size);
 		start += low_size;
 		size -= low_size;

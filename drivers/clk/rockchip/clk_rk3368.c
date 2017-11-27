@@ -377,7 +377,7 @@ static ulong rk3368_spi_set_clk(struct rk3368_cru *cru, ulong clk_id, uint hz)
 	int src_clk_div;
 
 	src_clk_div = DIV_ROUND_UP(GPLL_HZ, hz);
-	assert(src_clk_div < 127);
+	BUG_ON(src_clk_div >= 127);
 
 	switch (clk_id) {
 	case SCLK_SPI0 ... SCLK_SPI2:
@@ -414,7 +414,7 @@ static ulong rk3368_saradc_set_clk(struct rk3368_cru *cru, uint hz)
 	int src_clk_div;
 
 	src_clk_div = DIV_ROUND_UP(OSC_HZ, hz) - 1;
-	assert(src_clk_div < 128);
+	BUG_ON(src_clk_div >= 128);
 
 	rk_clrsetreg(&cru->clksel_con[25],
 		     CLK_SARADC_DIV_CON_MASK,

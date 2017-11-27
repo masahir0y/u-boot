@@ -591,7 +591,7 @@ static int wait_for_mc(bool booting_mc, u32 *final_reg_gsr)
 	struct mc_ccsr_registers __iomem *mc_ccsr_regs = MC_CCSR_BASE_ADDR;
 
 	dmb();
-	assert(timeout_ms > 0);
+	BUG_ON(0 >= timeout_ms);
 	for (;;) {
 		udelay(1000);	/* throttle polling */
 		reg_gsr = in_le32(&mc_ccsr_regs->reg_gsr);

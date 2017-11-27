@@ -249,7 +249,7 @@ static efi_status_t dir_read(struct file_handle *fh, u64 *buffer_size,
 	unsigned int required_size;
 
 	if (!fh->dirs) {
-		assert(fh->offset == 0);
+		BUG_ON(fh->offset != 0);
 		fh->dirs = fs_opendir(fh->path);
 		if (!fh->dirs)
 			return EFI_DEVICE_ERROR;

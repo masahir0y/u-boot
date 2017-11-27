@@ -301,9 +301,7 @@ static void rkclk_set_pll(u32 *pll_con, const struct pll_div *div)
 			   "postdiv2=%d, vco=%u khz, output=%u khz\n",
 			   pll_con, div->fbdiv, div->refdiv, div->postdiv1,
 			   div->postdiv2, vco_khz, output_khz);
-	assert(vco_khz >= VCO_MIN_KHZ && vco_khz <= VCO_MAX_KHZ &&
-	       output_khz >= OUTPUT_MIN_KHZ && output_khz <= OUTPUT_MAX_KHZ &&
-	       div->fbdiv >= PLL_DIV_MIN && div->fbdiv <= PLL_DIV_MAX);
+	BUG_ON(!(vco_khz >= VCO_MIN_KHZ && vco_khz <= VCO_MAX_KHZ && output_khz >= OUTPUT_MIN_KHZ && output_khz <= OUTPUT_MAX_KHZ && div->fbdiv >= PLL_DIV_MIN && div->fbdiv <= PLL_DIV_MAX));
 
 	/*
 	 * When power on or changing PLL setting,
@@ -408,16 +406,13 @@ void rk3399_configure_cpu(struct rk3399_cru *cru,
 	rkclk_set_pll(&cru->apll_l_con[0], apll_l_cfgs[apll_l_freq]);
 
 	aclkm_div = APLL_HZ / ACLKM_CORE_HZ - 1;
-	assert((aclkm_div + 1) * ACLKM_CORE_HZ == APLL_HZ &&
-	       aclkm_div < 0x1f);
+	BUG_ON(!((aclkm_div + 1) * ACLKM_CORE_HZ == APLL_HZ && aclkm_div < 0x1f));
 
 	pclk_dbg_div = APLL_HZ / PCLK_DBG_HZ - 1;
-	assert((pclk_dbg_div + 1) * PCLK_DBG_HZ == APLL_HZ &&
-	       pclk_dbg_div < 0x1f);
+	BUG_ON(!((pclk_dbg_div + 1) * PCLK_DBG_HZ == APLL_HZ && pclk_dbg_div < 0x1f));
 
 	atclk_div = APLL_HZ / ATCLK_CORE_HZ - 1;
-	assert((atclk_div + 1) * ATCLK_CORE_HZ == APLL_HZ &&
-	       atclk_div < 0x1f);
+	BUG_ON(!((atclk_div + 1) * ATCLK_CORE_HZ == APLL_HZ && atclk_div < 0x1f));
 
 	rk_clrsetreg(&cru->clksel_con[0],
 		     ACLKM_CORE_L_DIV_CON_MASK | CLK_CORE_L_PLL_SEL_MASK |
@@ -498,7 +493,7 @@ static ulong rk3399_i2c_set_clk(struct rk3399_cru *cru, ulong clk_id, uint hz)
 
 	/* i2c0,4,8 src clock from ppll, i2c1,2,3,5,6,7 src clock from gpll*/
 	src_clk_div = GPLL_HZ / hz;
-	assert(src_clk_div - 1 < 127);
+	BUG_ON(src_clk_div - 1 >= 127);
 
 	switch (clk_id) {
 	case SCLK_I2C1:
@@ -597,7 +592,7 @@ static ulong rk3399_spi_set_clk(struct rk3399_cru *cru, ulong clk_id, uint hz)
 	int src_clk_div;
 
 	src_clk_div = DIV_ROUND_UP(GPLL_HZ, hz) - 1;
-	assert(src_clk_div < 128);
+	BUG_ON(src_clk_div >= 128);
 
 	switch (clk_id) {
 	case SCLK_SPI1 ... SCLK_SPI5:
@@ -639,7 +634,7 @@ static ulong rk3399_vop_set_clk(struct rk3399_cru *cru, ulong clk_id, u32 hz)
 	}
 	/* vop aclk source clk: cpll */
 	div = CPLL_HZ / aclk_vop;
-	assert(div - 1 < 32);
+	BUG_ON(div - 1 >= 32);
 
 	rk_clrsetreg(aclkreg_addr,
 		     ACLK_VOP_PLL_SEL_MASK | ACLK_VOP_DIV_CON_MASK,
@@ -705,7 +700,7 @@ static ulong rk3399_mmc_set_clk(struct rk3399_cru *cru,
 		if (src_clk_div > 128) {
 			/* use 24MHz source for 400KHz clock */
 			src_clk_div = DIV_ROUND_UP(OSC_HZ / 2, set_rate);
-			assert(src_clk_div - 1 < 128);
+			BUG_ON(src_clk_div - 1 >= 128);
 			rk_clrsetreg(&cru->clksel_con[16],
 				     CLK_EMMC_PLL_MASK | CLK_EMMC_DIV_CON_MASK,
 				     CLK_EMMC_PLL_SEL_24M << CLK_EMMC_PLL_SHIFT |
@@ -720,7 +715,7 @@ static ulong rk3399_mmc_set_clk(struct rk3399_cru *cru,
 	case SCLK_EMMC:
 		/* Select aclk_emmc source from GPLL */
 		src_clk_div = DIV_ROUND_UP(GPLL_HZ , aclk_emmc);
-		assert(src_clk_div - 1 < 32);
+		BUG_ON(src_clk_div - 1 >= 32);
 
 		rk_clrsetreg(&cru->clksel_con[21],
 			     ACLK_EMMC_PLL_SEL_MASK | ACLK_EMMC_DIV_CON_MASK,
@@ -729,7 +724,7 @@ static ulong rk3399_mmc_set_clk(struct rk3399_cru *cru,
 
 		/* Select clk_emmc source from GPLL too */
 		src_clk_div = DIV_ROUND_UP(GPLL_HZ, set_rate);
-		assert(src_clk_div - 1 < 128);
+		BUG_ON(src_clk_div - 1 >= 128);
 
 		rk_clrsetreg(&cru->clksel_con[22],
 			     CLK_EMMC_PLL_MASK | CLK_EMMC_DIV_CON_MASK,
@@ -797,7 +792,7 @@ static ulong rk3399_saradc_set_clk(struct rk3399_cru *cru, uint hz)
 	int src_clk_div;
 
 	src_clk_div = DIV_ROUND_UP(OSC_HZ, hz) - 1;
-	assert(src_clk_div < 128);
+	BUG_ON(src_clk_div >= 128);
 
 	rk_clrsetreg(&cru->clksel_con[26],
 		     CLK_SARADC_DIV_CON_MASK,
@@ -945,15 +940,13 @@ static void rkclk_init(struct rk3399_cru *cru)
 
 	/* configure perihp aclk, hclk, pclk */
 	aclk_div = GPLL_HZ / PERIHP_ACLK_HZ - 1;
-	assert((aclk_div + 1) * PERIHP_ACLK_HZ == GPLL_HZ && aclk_div < 0x1f);
+	BUG_ON(!((aclk_div + 1) * PERIHP_ACLK_HZ == GPLL_HZ && aclk_div < 0x1f));
 
 	hclk_div = PERIHP_ACLK_HZ / PERIHP_HCLK_HZ - 1;
-	assert((hclk_div + 1) * PERIHP_HCLK_HZ ==
-	       PERIHP_ACLK_HZ && (hclk_div < 0x4));
+	BUG_ON(!((hclk_div + 1) * PERIHP_HCLK_HZ == PERIHP_ACLK_HZ && (hclk_div < 0x4)));
 
 	pclk_div = PERIHP_ACLK_HZ / PERIHP_PCLK_HZ - 1;
-	assert((pclk_div + 1) * PERIHP_PCLK_HZ ==
-	       PERIHP_ACLK_HZ && (pclk_div < 0x7));
+	BUG_ON(!((pclk_div + 1) * PERIHP_PCLK_HZ == PERIHP_ACLK_HZ && (pclk_div < 0x7)));
 
 	rk_clrsetreg(&cru->clksel_con[14],
 		     PCLK_PERIHP_DIV_CON_MASK | HCLK_PERIHP_DIV_CON_MASK |
@@ -965,15 +958,13 @@ static void rkclk_init(struct rk3399_cru *cru)
 
 	/* configure perilp0 aclk, hclk, pclk */
 	aclk_div = GPLL_HZ / PERILP0_ACLK_HZ - 1;
-	assert((aclk_div + 1) * PERILP0_ACLK_HZ == GPLL_HZ && aclk_div < 0x1f);
+	BUG_ON(!((aclk_div + 1) * PERILP0_ACLK_HZ == GPLL_HZ && aclk_div < 0x1f));
 
 	hclk_div = PERILP0_ACLK_HZ / PERILP0_HCLK_HZ - 1;
-	assert((hclk_div + 1) * PERILP0_HCLK_HZ ==
-	       PERILP0_ACLK_HZ && (hclk_div < 0x4));
+	BUG_ON(!((hclk_div + 1) * PERILP0_HCLK_HZ == PERILP0_ACLK_HZ && (hclk_div < 0x4)));
 
 	pclk_div = PERILP0_ACLK_HZ / PERILP0_PCLK_HZ - 1;
-	assert((pclk_div + 1) * PERILP0_PCLK_HZ ==
-	       PERILP0_ACLK_HZ && (pclk_div < 0x7));
+	BUG_ON(!((pclk_div + 1) * PERILP0_PCLK_HZ == PERILP0_ACLK_HZ && (pclk_div < 0x7)));
 
 	rk_clrsetreg(&cru->clksel_con[23],
 		     PCLK_PERILP0_DIV_CON_MASK | HCLK_PERILP0_DIV_CON_MASK |
@@ -985,12 +976,10 @@ static void rkclk_init(struct rk3399_cru *cru)
 
 	/* perilp1 hclk select gpll as source */
 	hclk_div = GPLL_HZ / PERILP1_HCLK_HZ - 1;
-	assert((hclk_div + 1) * PERILP1_HCLK_HZ ==
-	       GPLL_HZ && (hclk_div < 0x1f));
+	BUG_ON(!((hclk_div + 1) * PERILP1_HCLK_HZ == GPLL_HZ && (hclk_div < 0x1f)));
 
 	pclk_div = PERILP1_HCLK_HZ / PERILP1_HCLK_HZ - 1;
-	assert((pclk_div + 1) * PERILP1_HCLK_HZ ==
-	       PERILP1_HCLK_HZ && (hclk_div < 0x7));
+	BUG_ON(!((pclk_div + 1) * PERILP1_HCLK_HZ == PERILP1_HCLK_HZ && (hclk_div < 0x7)));
 
 	rk_clrsetreg(&cru->clksel_con[25],
 		     PCLK_PERILP1_DIV_CON_MASK | HCLK_PERILP1_DIV_CON_MASK |
@@ -1099,7 +1088,7 @@ static ulong rk3399_i2c_set_pmuclk(struct rk3399_pmucru *pmucru, ulong clk_id,
 	int src_clk_div;
 
 	src_clk_div = PPLL_HZ / hz;
-	assert(src_clk_div - 1 < 127);
+	BUG_ON(src_clk_div - 1 >= 127);
 
 	switch (clk_id) {
 	case SCLK_I2C0_PMU:

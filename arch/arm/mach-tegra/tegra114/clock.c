@@ -486,9 +486,9 @@ u32 *get_periph_source_reg(enum periph_id periph_id)
 	if (periph_id == PERIPH_ID_CSI)
 		return &clkrst->crc_clk_src[PERIPH_ID_CSI+1];
 
-	assert(periph_id >= PERIPH_ID_FIRST && periph_id < PERIPH_ID_COUNT);
+	BUG_ON(!(periph_id >= PERIPH_ID_FIRST && periph_id < PERIPH_ID_COUNT));
 	internal_id = periph_id_to_internal_id[periph_id];
-	assert(internal_id != -1);
+	BUG_ON(internal_id == -1);
 	if (internal_id >= PERIPHC_VW_FIRST) {
 		internal_id -= PERIPHC_VW_FIRST;
 		return &clkrst->crc_clk_src_vw[internal_id];
@@ -560,7 +560,7 @@ int get_periph_clock_source(enum periph_id periph_id,
 	int mux, err;
 
 	err = get_periph_clock_info(periph_id, mux_bits, divider_bits, &type);
-	assert(!err);
+	BUG_ON(err);
 
 	for (mux = 0; mux < CLOCK_MAX_MUX; mux++)
 		if (clock_source[type][mux] == parent)
@@ -580,7 +580,7 @@ void clock_set_enable(enum periph_id periph_id, int enable)
 	u32 reg;
 
 	/* Enable/disable the clock to this peripheral */
-	assert(clock_periph_id_isvalid(periph_id));
+	BUG_ON(!clock_periph_id_isvalid(periph_id));
 	if ((int)periph_id < (int)PERIPH_ID_VW_FIRST)
 		clk = &clkrst->crc_clk_out_enb[PERIPH_REG(periph_id)];
 	else
@@ -601,7 +601,7 @@ void reset_set_enable(enum periph_id periph_id, int enable)
 	u32 reg;
 
 	/* Enable/disable reset to the peripheral */
-	assert(clock_periph_id_isvalid(periph_id));
+	BUG_ON(!clock_periph_id_isvalid(periph_id));
 	if (periph_id < PERIPH_ID_VW_FIRST)
 		reset = &clkrst->crc_rst_dev[PERIPH_REG(periph_id)];
 	else

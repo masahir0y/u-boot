@@ -109,7 +109,7 @@ static int pci_map_region(void *fdt, int pci_node, int range_id,
 		return -1;
 
 	/* Map virtual memory for range */
-	assert(!tlb_map_range(map_addr, addr, size, TLB_MAP_IO));
+	BUG_ON(tlb_map_range(map_addr, addr, size, TLB_MAP_IO));
 	*pmap_addr = map_addr + size;
 
 	if (pvaddr)
@@ -286,15 +286,13 @@ void init_tlbs(void)
 	init_used_tlb_cams();
 
 	/* Create a dynamic AS=0 CCSRBAR mapping */
-	assert(!tlb_map_range(CONFIG_SYS_CCSRBAR, CONFIG_SYS_CCSRBAR_PHYS,
-			      1024 * 1024, TLB_MAP_IO));
+	BUG_ON(tlb_map_range(CONFIG_SYS_CCSRBAR, CONFIG_SYS_CCSRBAR_PHYS, 1024 * 1024, TLB_MAP_IO));
 
 	/* Create a RAM map that spans all accessible RAM */
 	setup_ddr_tlbs(ram_size >> 20);
 
 	/* Create a map for the TLB */
-	assert(!tlb_map_range((ulong)get_fdt_virt(), get_fdt_phys(),
-			      1024 * 1024, TLB_MAP_RAM));
+	BUG_ON(tlb_map_range((ulong)get_fdt_virt(), get_fdt_phys(), 1024 * 1024, TLB_MAP_RAM));
 }
 
 void init_laws(void)

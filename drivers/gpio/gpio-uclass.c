@@ -480,7 +480,7 @@ const char *gpio_get_bank_info(struct udevice *dev, int *bit_count)
 
 	/* Must be called on an active device */
 	priv = dev_get_uclass_priv(dev);
-	assert(priv);
+	BUG_ON(!priv);
 
 	*bit_count = priv->gpio_count;
 	return priv->bank_name;

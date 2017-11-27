@@ -187,7 +187,7 @@ int eth_register(struct eth_device *dev)
 	struct eth_device *d;
 	static int index;
 
-	assert(strlen(dev->name) < sizeof(dev->name));
+	BUG_ON(strlen(dev->name) >= sizeof(dev->name));
 
 	if (!eth_devices) {
 		eth_devices = dev;

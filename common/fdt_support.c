@@ -1107,7 +1107,7 @@ static struct of_bus *of_match_bus(const void *blob, int parentoffset)
 	 * in the of_busses array or something equally catastrophic has
 	 * gone wrong.
 	 */
-	assert(0);
+	BUG_ON(!0);
 	return NULL;
 }
 

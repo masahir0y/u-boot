@@ -239,9 +239,7 @@ static void rkclk_set_pll(struct rk3328_cru *cru, enum rk_clk_id clk_id,
 	      postdiv2=%d, vco=%u khz, output=%u khz\n",
 	      pll_con, div->fbdiv, div->refdiv, div->postdiv1,
 	      div->postdiv2, vco_khz, output_khz);
-	assert(vco_khz >= VCO_MIN_KHZ && vco_khz <= VCO_MAX_KHZ &&
-	       output_khz >= OUTPUT_MIN_KHZ && output_khz <= OUTPUT_MAX_KHZ &&
-	       div->fbdiv >= PLL_DIV_MIN && div->fbdiv <= PLL_DIV_MAX);
+	BUG_ON(!(vco_khz >= VCO_MIN_KHZ && vco_khz <= VCO_MAX_KHZ && output_khz >= OUTPUT_MIN_KHZ && output_khz <= OUTPUT_MAX_KHZ && div->fbdiv >= PLL_DIV_MIN && div->fbdiv <= PLL_DIV_MAX));
 
 	/*
 	 * When power on or changing PLL setting,
@@ -354,7 +352,7 @@ static ulong rk3328_i2c_set_clk(struct rk3328_cru *cru, ulong clk_id, uint hz)
 	int src_clk_div;
 
 	src_clk_div = GPLL_HZ / hz;
-	assert(src_clk_div - 1 < 127);
+	BUG_ON(src_clk_div - 1 >= 127);
 
 	switch (clk_id) {
 	case SCLK_I2C0:
@@ -496,7 +494,7 @@ static ulong rk3328_saradc_set_clk(struct rk3328_cru *cru, uint hz)
 	int src_clk_div;
 
 	src_clk_div = DIV_ROUND_UP(OSC_HZ, hz) - 1;
-	assert(src_clk_div < 128);
+	BUG_ON(src_clk_div >= 128);
 
 	rk_clrsetreg(&cru->clksel_con[23],
 		     CLK_SARADC_DIV_CON_MASK,

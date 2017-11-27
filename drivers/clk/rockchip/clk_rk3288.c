@@ -152,9 +152,7 @@ static int rkclk_set_pll(struct rk3288_cru *cru, enum rk_clk_id clk_id,
 
 	debug("PLL at %x: nf=%d, nr=%d, no=%d, vco=%u Hz, output=%u Hz\n",
 	      (uint)pll, div->nf, div->nr, div->no, vco_hz, output_hz);
-	assert(vco_hz >= VCO_MIN_HZ && vco_hz <= VCO_MAX_HZ &&
-	       output_hz >= OUTPUT_MIN_HZ && output_hz <= OUTPUT_MAX_HZ &&
-	       (div->no == 1 || !(div->no % 2)));
+	BUG_ON(!(vco_hz >= VCO_MIN_HZ && vco_hz <= VCO_MAX_HZ && output_hz >= OUTPUT_MIN_HZ && output_hz <= OUTPUT_MAX_HZ && (div->no == 1 || !(div->no % 2))));
 
 	/* enter reset */
 	rk_setreg(&pll->con3, 1 << PLL_RESET_SHIFT);
@@ -374,14 +372,12 @@ static void rkclk_init(struct rk3288_cru *cru, struct rk3288_grf *grf)
 	 * set up dependent divisors for PCLK/HCLK and ACLK clocks.
 	 */
 	aclk_div = GPLL_HZ / PD_BUS_ACLK_HZ - 1;
-	assert((aclk_div + 1) * PD_BUS_ACLK_HZ == GPLL_HZ && aclk_div < 0x1f);
+	BUG_ON(!((aclk_div + 1) * PD_BUS_ACLK_HZ == GPLL_HZ && aclk_div < 0x1f));
 	hclk_div = PD_BUS_ACLK_HZ / PD_BUS_HCLK_HZ - 1;
-	assert((hclk_div + 1) * PD_BUS_HCLK_HZ ==
-		PD_BUS_ACLK_HZ && (hclk_div < 0x4) && (hclk_div != 0x2));
+	BUG_ON(!((hclk_div + 1) * PD_BUS_HCLK_HZ == PD_BUS_ACLK_HZ && (hclk_div < 0x4) && (hclk_div != 0x2)));
 
 	pclk_div = PD_BUS_ACLK_HZ / PD_BUS_PCLK_HZ - 1;
-	assert((pclk_div + 1) * PD_BUS_PCLK_HZ ==
-		PD_BUS_ACLK_HZ && pclk_div < 0x7);
+	BUG_ON(!((pclk_div + 1) * PD_BUS_PCLK_HZ == PD_BUS_ACLK_HZ && pclk_div < 0x7));
 
 	rk_clrsetreg(&cru->cru_clksel_con[1],
 		     PD_BUS_PCLK_DIV_MASK | PD_BUS_HCLK_DIV_MASK |
@@ -396,15 +392,13 @@ static void rkclk_init(struct rk3288_cru *cru, struct rk3288_grf *grf)
 	 * set up dependent divisors for PCLK/HCLK and ACLK clocks.
 	 */
 	aclk_div = GPLL_HZ / PERI_ACLK_HZ - 1;
-	assert((aclk_div + 1) * PERI_ACLK_HZ == GPLL_HZ && aclk_div < 0x1f);
+	BUG_ON(!((aclk_div + 1) * PERI_ACLK_HZ == GPLL_HZ && aclk_div < 0x1f));
 
 	hclk_div = ilog2(PERI_ACLK_HZ / PERI_HCLK_HZ);
-	assert((1 << hclk_div) * PERI_HCLK_HZ ==
-		PERI_ACLK_HZ && (hclk_div < 0x4));
+	BUG_ON(!((1 << hclk_div) * PERI_HCLK_HZ == PERI_ACLK_HZ && (hclk_div < 0x4)));
 
 	pclk_div = ilog2(PERI_ACLK_HZ / PERI_PCLK_HZ);
-	assert((1 << pclk_div) * PERI_PCLK_HZ ==
-		PERI_ACLK_HZ && (pclk_div < 0x4));
+	BUG_ON(!((1 << pclk_div) * PERI_PCLK_HZ == PERI_ACLK_HZ && (pclk_div < 0x4)));
 
 	rk_clrsetreg(&cru->cru_clksel_con[10],
 		     PERI_PCLK_DIV_MASK | PERI_HCLK_DIV_MASK |
@@ -542,14 +536,12 @@ static ulong rockchip_mmc_set_clk(struct rk3288_cru *cru, uint gclk_rate,
 
 	if (src_clk_div > 0x3f) {
 		src_clk_div = DIV_ROUND_UP(OSC_HZ / 2, freq);
-		assert(src_clk_div < 0x40);
+		BUG_ON(src_clk_div >= 0x40);
 		mux = EMMC_PLL_SELECT_24MHZ;
-		assert((int)EMMC_PLL_SELECT_24MHZ ==
-		       (int)MMC0_PLL_SELECT_24MHZ);
+		BUG_ON((int)EMMC_PLL_SELECT_24MHZ != (int)MMC0_PLL_SELECT_24MHZ);
 	} else {
 		mux = EMMC_PLL_SELECT_GENERAL;
-		assert((int)EMMC_PLL_SELECT_GENERAL ==
-		       (int)MMC0_PLL_SELECT_GENERAL);
+		BUG_ON((int)EMMC_PLL_SELECT_GENERAL != (int)MMC0_PLL_SELECT_GENERAL);
 	}
 	switch (periph) {
 	case HCLK_EMMC:
@@ -605,7 +597,7 @@ static ulong rockchip_spi_get_clk(struct rk3288_cru *cru, uint gclk_rate,
 	default:
 		return -EINVAL;
 	}
-	assert(mux == SPI0_PLL_SELECT_GENERAL);
+	BUG_ON(mux != SPI0_PLL_SELECT_GENERAL);
 
 	return DIV_TO_RATE(gclk_rate, div);
 }
@@ -617,7 +609,7 @@ static ulong rockchip_spi_set_clk(struct rk3288_cru *cru, uint gclk_rate,
 
 	debug("%s: clk_general_rate=%u\n", __func__, gclk_rate);
 	src_clk_div = DIV_ROUND_UP(gclk_rate, freq) - 1;
-	assert(src_clk_div < 128);
+	BUG_ON(src_clk_div >= 128);
 	switch (periph) {
 	case SCLK_SPI0:
 		rk_clrsetreg(&cru->cru_clksel_con[25],
@@ -660,7 +652,7 @@ static ulong rockchip_saradc_set_clk(struct rk3288_cru *cru, uint hz)
 	int src_clk_div;
 
 	src_clk_div = DIV_ROUND_UP(OSC_HZ, hz) - 1;
-	assert(src_clk_div < 128);
+	BUG_ON(src_clk_div >= 128);
 
 	rk_clrsetreg(&cru->cru_clksel_con[24],
 		     CLK_SARADC_DIV_CON_MASK,
@@ -766,7 +758,7 @@ static ulong rk3288_clk_set_rate(struct clk *clk, ulong rate)
 
 		/* vop aclk source clk: cpll */
 		div = CPLL_HZ / rate;
-		assert((div - 1 < 64) && (div * rate == CPLL_HZ));
+		BUG_ON(!((div - 1 < 64) && (div * rate == CPLL_HZ)));
 
 		switch (clk->id) {
 		case ACLK_VOP0:

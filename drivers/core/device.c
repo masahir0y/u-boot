@@ -307,7 +307,7 @@ int device_probe(struct udevice *dev)
 		return 0;
 
 	drv = dev->driver;
-	assert(drv);
+	BUG_ON(!drv);
 
 	/* Allocate private data if requested and not reentered */
 	if (drv->priv_auto_alloc_size && !dev->priv) {

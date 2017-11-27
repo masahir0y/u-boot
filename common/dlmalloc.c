@@ -57,7 +57,7 @@ GmListElement* makeGmListElement (void* bas)
 {
 	GmListElement* this;
 	this = (GmListElement*)(void*)LocalAlloc (0, sizeof (GmListElement));
-	assert (this);
+	BUG_ON(!this);
 	if (this)
 	{
 		this->base = bas;
@@ -70,19 +70,19 @@ GmListElement* makeGmListElement (void* bas)
 void gcleanup ()
 {
 	BOOL rval;
-	assert ( (head == NULL) || (head->base == (void*)gAddressBase));
+	BUG_ON(!((head == NULL) || (head->base == (void *)gAddressBase)));
 	if (gAddressBase && (gNextAddress - gAddressBase))
 	{
 		rval = VirtualFree ((void*)gAddressBase,
 							gNextAddress - gAddressBase,
 							MEM_DECOMMIT);
-	assert (rval);
+	BUG_ON(!rval);
 	}
 	while (head)
 	{
 		GmListElement* next = head->next;
 		rval = VirtualFree (head->base, 0, MEM_RELEASE);
-		assert (rval);
+		BUG_ON(!rval);
 		LocalFree (head);
 		head = next;
 	}
@@ -161,7 +161,7 @@ gAllocatedSize))
 			}
 			while (gAddressBase == 0);
 
-			assert (new_address == (void*)gAddressBase);
+			BUG_ON(new_address != (void *)gAddressBase);
 
 			gAllocatedSize = new_size;
 
@@ -734,14 +734,14 @@ static void do_check_chunk(p) mchunkptr p;
   INTERNAL_SIZE_T sz = p->size & ~PREV_INUSE;
 
   /* No checkable chunk is mmapped */
-  assert(!chunk_is_mmapped(p));
+  BUG_ON(chunk_is_mmapped(p));
 
   /* Check for legal address ... */
-  assert((char*)p >= sbrk_base);
+  BUG_ON(sbrk_base > (char *)p);
   if (p != top)
-    assert((char*)p + sz <= (char*)top);
+    BUG_ON((char *)p + sz > (char *)top);
   else
-    assert((char*)p + sz <= sbrk_base + sbrked_mem);
+    BUG_ON((char *)p + sz > sbrk_base + sbrked_mem);
 
 }
 
@@ -758,25 +758,25 @@ static void do_check_free_chunk(p) mchunkptr p;
   do_check_chunk(p);
 
   /* Check whether it claims to be free ... */
-  assert(!inuse(p));
+  BUG_ON(inuse(p));
 
   /* Unless a special marker, must have OK fields */
   if ((long)sz >= (long)MINSIZE)
   {
-    assert((sz & MALLOC_ALIGN_MASK) == 0);
-    assert(aligned_OK(chunk2mem(p)));
+    BUG_ON((sz & MALLOC_ALIGN_MASK) != 0);
+    BUG_ON(!aligned_OK(chunk2mem(p)));
     /* ... matching footer field */
-    assert(next->prev_size == sz);
+    BUG_ON(next->prev_size != sz);
     /* ... and is fully consolidated */
-    assert(prev_inuse(p));
-    assert (next == top || inuse(next));
+    BUG_ON(!prev_inuse(p));
+    BUG_ON(!(next == top || inuse(next)));
 
     /* ... and has minimally sane links */
-    assert(p->fd->bk == p);
-    assert(p->bk->fd == p);
+    BUG_ON(p->fd->bk != p);
+    BUG_ON(p->bk->fd != p);
   }
   else /* markers are always of size SIZE_SZ */
-    assert(sz == SIZE_SZ);
+    BUG_ON(sz != SIZE_SZ);
 }
 
 #if __STD_C
@@ -789,7 +789,7 @@ static void do_check_inuse_chunk(p) mchunkptr p;
   do_check_chunk(p);
 
   /* Check whether it claims to be in use ... */
-  assert(inuse(p));
+  BUG_ON(!inuse(p));
 
   /* ... and is surrounded by OK chunks.
     Since more things can be checked with free chunks than inuse ones,
@@ -798,13 +798,13 @@ static void do_check_inuse_chunk(p) mchunkptr p;
   if (!prev_inuse(p))
   {
     mchunkptr prv = prev_chunk(p);
-    assert(next_chunk(prv) == p);
+    BUG_ON(next_chunk(prv) != p);
     do_check_free_chunk(prv);
   }
   if (next == top)
   {
-    assert(prev_inuse(next));
-    assert(chunksize(next) >= MINSIZE);
+    BUG_ON(!prev_inuse(next));
+    BUG_ON(MINSIZE > chunksize(next));
   }
   else if (!inuse(next))
     do_check_free_chunk(next);
@@ -823,17 +823,17 @@ static void do_check_malloced_chunk(p, s) mchunkptr p; INTERNAL_SIZE_T s;
   do_check_inuse_chunk(p);
 
   /* Legal size ... */
-  assert((long)sz >= (long)MINSIZE);
-  assert((sz & MALLOC_ALIGN_MASK) == 0);
-  assert(room >= 0);
-  assert(room < (long)MINSIZE);
+  BUG_ON((long)MINSIZE > (long)sz);
+  BUG_ON((sz & MALLOC_ALIGN_MASK) != 0);
+  BUG_ON(0 > room);
+  BUG_ON(room >= (long)MINSIZE);
 
   /* ... and alignment */
-  assert(aligned_OK(chunk2mem(p)));
+  BUG_ON(!aligned_OK(chunk2mem(p)));
 
 
   /* ... and was allocated at front of an available chunk */
-  assert(prev_inuse(p));
+  BUG_ON(!prev_inuse(p));
 
 }
 
@@ -966,7 +966,7 @@ static mchunkptr mmap_chunk(size) size_t size;
   if (n_mmaps > max_n_mmaps) max_n_mmaps = n_mmaps;
 
   /* We demand that eight bytes into a page must be 8-byte aligned. */
-  assert(aligned_OK(chunk2mem(p)));
+  BUG_ON(!aligned_OK(chunk2mem(p)));
 
   /* The offset to the start of the mmapped region is stored
    * in the prev_size field of the chunk; normally it is zero,
@@ -992,10 +992,10 @@ static void munmap_chunk(p) mchunkptr p;
   INTERNAL_SIZE_T size = chunksize(p);
   int ret;
 
-  assert (chunk_is_mmapped(p));
-  assert(! ((char*)p >= sbrk_base && (char*)p < sbrk_base + sbrked_mem));
-  assert((n_mmaps > 0));
-  assert(((p->prev_size + size) & (malloc_getpagesize-1)) == 0);
+  BUG_ON(!chunk_is_mmapped(p));
+  BUG_ON(((char *)p >= sbrk_base && (char *)p < sbrk_base + sbrked_mem));
+  BUG_ON(!(n_mmaps > 0));
+  BUG_ON(((p->prev_size + size) & (malloc_getpagesize - 1)) != 0);
 
   n_mmaps--;
   mmapped_mem -= (size + p->prev_size);
@@ -1003,7 +1003,7 @@ static void munmap_chunk(p) mchunkptr p;
   ret = munmap((char *)p - p->prev_size, size + p->prev_size);
 
   /* munmap returns non-zero on failure */
-  assert(ret == 0);
+  BUG_ON(ret != 0);
 }
 
 #if HAVE_MREMAP
@@ -1019,10 +1019,10 @@ static mchunkptr mremap_chunk(p, new_size) mchunkptr p; size_t new_size;
   INTERNAL_SIZE_T size = chunksize(p);
   char *cp;
 
-  assert (chunk_is_mmapped(p));
-  assert(! ((char*)p >= sbrk_base && (char*)p < sbrk_base + sbrked_mem));
-  assert((n_mmaps > 0));
-  assert(((size + offset) & (malloc_getpagesize-1)) == 0);
+  BUG_ON(!chunk_is_mmapped(p));
+  BUG_ON(((char *)p >= sbrk_base && (char *)p < sbrk_base + sbrked_mem));
+  BUG_ON(!(n_mmaps > 0));
+  BUG_ON(((size + offset) & (malloc_getpagesize - 1)) != 0);
 
   /* Note the extra SIZE_SZ overhead as in mmap_chunk(). */
   new_size = (new_size + offset + SIZE_SZ + page_mask) & ~page_mask;
@@ -1033,9 +1033,9 @@ static mchunkptr mremap_chunk(p, new_size) mchunkptr p; size_t new_size;
 
   p = (mchunkptr)(cp + offset);
 
-  assert(aligned_OK(chunk2mem(p)));
+  BUG_ON(!aligned_OK(chunk2mem(p)));
 
-  assert((p->prev_size == offset));
+  BUG_ON(!(p->prev_size == offset));
   set_head(p, (new_size - offset)|IS_MMAPPED);
 
   mmapped_mem -= size + offset;
@@ -1165,7 +1165,7 @@ static void malloc_extend_top(nb) INTERNAL_SIZE_T nb;
     max_total_mem = mmapped_mem + sbrked_mem;
 
   /* We always land on a page boundary */
-  assert(((unsigned long)((char*)top + top_size) & (pagesz - 1)) == 0);
+  BUG_ON(((unsigned long)((char *)top + top_size) & (pagesz - 1)) != 0);
 }
 
 
@@ -1991,7 +1991,7 @@ Void_t* mEMALIGn(alignment, bytes) size_t alignment; size_t bytes;
     fREe(chunk2mem(p));
     p = newp;
 
-    assert (newsize >= nb && (((unsigned long)(chunk2mem(p))) % alignment) == 0);
+    BUG_ON(!(newsize >= nb && (((unsigned long)(chunk2mem(p))) % alignment) == 0));
   }
 
   /* Also give back spare room at the end */
@@ -2380,7 +2380,7 @@ int mALLOPt(param_number, value) int param_number; int value;
 int initf_malloc(void)
 {
 #if CONFIG_VAL(SYS_MALLOC_F_LEN)
-	assert(gd->malloc_base);	/* Set up by crt0.S */
+	BUG_ON(!gd->malloc_base);	/* Set up by crt0.S */
 	gd->malloc_limit = CONFIG_VAL(SYS_MALLOC_F_LEN);
 	gd->malloc_ptr = 0;
 #endif

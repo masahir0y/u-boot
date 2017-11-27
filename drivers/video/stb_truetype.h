@@ -417,7 +417,7 @@ int main(int arg, char **argv)
 
    #ifndef STBTT_assert
    #include <assert.h>
-   #define STBTT_assert(x)    assert(x)
+   #define STBTT_assert(x)    BUG_ON(!x)
    #endif
 
    #ifndef STBTT_strlen

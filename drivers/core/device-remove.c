@@ -32,7 +32,7 @@ static int device_chld_unbind(struct udevice *dev)
 	struct udevice *pos, *n;
 	int ret, saved_ret = 0;
 
-	assert(dev);
+	BUG_ON(!dev);
 
 	list_for_each_entry_safe(pos, n, &dev->child_head, sibling_node) {
 		ret = device_unbind(pos);
@@ -54,7 +54,7 @@ static int device_chld_remove(struct udevice *dev, uint flags)
 	struct udevice *pos, *n;
 	int ret;
 
-	assert(dev);
+	BUG_ON(!dev);
 
 	list_for_each_entry_safe(pos, n, &dev->child_head, sibling_node) {
 		ret = device_remove(pos, flags);
@@ -80,7 +80,7 @@ int device_unbind(struct udevice *dev)
 		return -EINVAL;
 
 	drv = dev->driver;
-	assert(drv);
+	BUG_ON(!drv);
 
 	if (drv->unbind) {
 		ret = drv->unbind(dev);
@@ -173,7 +173,7 @@ int device_remove(struct udevice *dev, uint flags)
 		return 0;
 
 	drv = dev->driver;
-	assert(drv);
+	BUG_ON(!drv);
 
 	ret = uclass_pre_remove_device(dev);
 	if (ret)

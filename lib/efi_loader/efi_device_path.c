@@ -507,7 +507,7 @@ struct efi_device_path *efi_dp_from_eth(void)
 	void *buf, *start;
 	unsigned dpsize = 0;
 
-	assert(eth_get_dev());
+	BUG_ON(!eth_get_dev());
 
 #ifdef CONFIG_DM_ETH
 	dpsize += dp_size(eth_get_dev());

@@ -385,7 +385,7 @@ efi_status_t efi_free_pool(void *buffer)
 
 	alloc = container_of(buffer, struct efi_pool_allocation, data);
 	/* Sanity check, was the supplied address returned by allocate_pool */
-	assert(((uintptr_t)alloc & EFI_PAGE_MASK) == 0);
+	BUG_ON(((uintptr_t)alloc & EFI_PAGE_MASK) != 0);
 
 	r = efi_free_pages((uintptr_t)alloc, alloc->num_pages);
 
