@@ -5,6 +5,8 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 
+subdir-ccflags-y := -DPRINTF_FORBIDDEN
+
 ifndef CONFIG_SPL_BUILD
 
 obj-$(CONFIG_EFI) += efi/

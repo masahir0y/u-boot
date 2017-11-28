@@ -344,6 +344,21 @@ int printf(const char *fmt, ...)
 	return ret;
 }
 
+int printk(const char *fmt, ...)
+{
+	struct printf_info info;
+
+	va_list va;
+	int ret;
+
+	info.putc = putc_normal;
+	va_start(va, fmt);
+	ret = _vprintf(&info, fmt, va);
+	va_end(va);
+
+	return ret;
+}
+
 static void putc_outstr(struct printf_info *info, char ch)
 {
 	*info->outstr++ = ch;

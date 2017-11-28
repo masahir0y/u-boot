@@ -1,7 +1,6 @@
 #ifndef __KERNEL_PRINTK__
 #define __KERNEL_PRINTK__
 
-#include <stdio.h>
 #include <linux/compiler.h>
 
 #define KERN_EMERG
@@ -14,8 +13,7 @@
 #define KERN_DEBUG
 #define KERN_CONT
 
-#define printk(fmt, ...) \
-	printf(fmt, ##__VA_ARGS__)
+int __printf(1, 2) printk(const char *fmt, ...);
 
 /*
  * Dummy printk for disabled debugging statements to use whilst maintaining
