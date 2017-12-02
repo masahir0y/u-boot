@@ -191,7 +191,7 @@ int ext4fs_put_metadata(char *metadata_buffer, uint32_t blknr)
 		return -EINVAL;
 	}
 	if (dirty_block_ptr[gd_index]->buf)
-		assert(dirty_block_ptr[gd_index]->blknr == blknr);
+		BUG_ON(dirty_block_ptr[gd_index]->blknr != blknr);
 	else
 		dirty_block_ptr[gd_index]->buf = zalloc(fs->blksz);
 

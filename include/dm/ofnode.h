@@ -157,9 +157,7 @@ static inline bool ofnode_is_np(ofnode node)
 	 * Check our assumption that flat tree offsets are not used when a
 	 * live tree is in use.
 	 */
-	assert(!ofnode_valid(node) ||
-	       (of_live_active() ? _ofnode_to_np(node)
-				  : _ofnode_to_np(node)));
+	BUG_ON(!(!ofnode_valid(node) || (of_live_active() ? _ofnode_to_np(node) : _ofnode_to_np(node))));
 #endif
 	return of_live_active() && ofnode_valid(node);
 }

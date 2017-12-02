@@ -147,7 +147,7 @@ static unsigned long do_bootefi_exec(void *efi, void *fdt,
 		memdp = efi_dp_from_mem(0, 0, 0);
 		device_path = image_path = memdp;
 	} else {
-		assert(device_path && image_path);
+		BUG_ON(!(device_path && image_path));
 	}
 
 	/* Initialize and populate EFI object list */

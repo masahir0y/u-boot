@@ -151,7 +151,7 @@ int tps6586x_set_pwm_mode(int mask)
 	uchar val;
 	int ret;
 
-	assert(tps6586x_dev);
+	BUG_ON(!tps6586x_dev);
 	ret = tps6586x_read(PFM_MODE);
 	if (ret != -1) {
 		val = (uchar)ret;
@@ -172,7 +172,7 @@ int tps6586x_adjust_sm0_sm1(int sm0_target, int sm1_target, int step, int rate,
 	int sm0, sm1;
 	int bad;
 
-	assert(tps6586x_dev);
+	BUG_ON(!tps6586x_dev);
 
 	/* get current voltage settings */
 	if (read_voltages(&sm0, &sm1)) {

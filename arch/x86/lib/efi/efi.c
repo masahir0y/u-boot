@@ -55,7 +55,7 @@ ulong board_get_usable_ram_top(ulong total_size)
 	}
 
 	/* If no suitable area was found, return an error. */
-	assert(largest);
+	BUG_ON(!largest);
 	if (!largest || (largest->num_pages << EFI_PAGE_SHIFT) < (2 << 20))
 		goto err;
 

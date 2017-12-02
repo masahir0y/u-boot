@@ -96,9 +96,7 @@ static int rkclk_set_pll(struct rk3188_cru *cru, enum rk_clk_id clk_id,
 
 	debug("PLL at %x: nf=%d, nr=%d, no=%d, vco=%u Hz, output=%u Hz\n",
 	      (uint)pll, div->nf, div->nr, div->no, vco_hz, output_hz);
-	assert(vco_hz >= VCO_MIN_HZ && vco_hz <= VCO_MAX_HZ &&
-	       output_hz >= OUTPUT_MIN_HZ && output_hz <= OUTPUT_MAX_HZ &&
-	       (div->no == 1 || !(div->no % 2)));
+	BUG_ON(!(vco_hz >= VCO_MIN_HZ && vco_hz <= VCO_MAX_HZ && output_hz >= OUTPUT_MIN_HZ && output_hz <= OUTPUT_MAX_HZ && (div->no == 1 || !(div->no % 2))));
 
 	/* enter reset */
 	rk_setreg(&pll->con3, 1 << PLL_RESET_SHIFT);
@@ -295,7 +293,7 @@ static ulong rockchip_mmc_set_clk(struct rk3188_cru *cru, uint gclk_rate,
 	debug("%s: gclk_rate=%u\n", __func__, gclk_rate);
 	/* mmc clock defaulg div 2 internal, need provide double in cru */
 	src_clk_div = DIV_ROUND_UP(gclk_rate / 2, freq) - 1;
-	assert(src_clk_div <= 0x3f);
+	BUG_ON(src_clk_div > 0x3f);
 
 	switch (periph) {
 	case HCLK_EMMC:
@@ -350,16 +348,16 @@ static ulong rockchip_spi_set_clk(struct rk3188_cru *cru, uint gclk_rate,
 {
 	int src_clk_div = DIV_ROUND_UP(gclk_rate, freq) - 1;
 
-	assert(src_clk_div < 128);
+	BUG_ON(src_clk_div >= 128);
 	switch (periph) {
 	case SCLK_SPI0:
-		assert(src_clk_div <= SPI0_DIV_MASK);
+		BUG_ON(src_clk_div > SPI0_DIV_MASK);
 		rk_clrsetreg(&cru->cru_clksel_con[25],
 			     SPI0_DIV_MASK << SPI0_DIV_SHIFT,
 			     src_clk_div << SPI0_DIV_SHIFT);
 		break;
 	case SCLK_SPI1:
-		assert(src_clk_div <= SPI1_DIV_MASK);
+		BUG_ON(src_clk_div > SPI1_DIV_MASK);
 		rk_clrsetreg(&cru->cru_clksel_con[25],
 			     SPI1_DIV_MASK << SPI1_DIV_SHIFT,
 			     src_clk_div << SPI1_DIV_SHIFT);
@@ -400,7 +398,7 @@ static void rkclk_init(struct rk3188_cru *cru, struct rk3188_grf *grf,
 	 * set up dependent divisors for PCLK/HCLK and ACLK clocks.
 	 */
 	aclk_div = DIV_ROUND_UP(GPLL_HZ, CPU_ACLK_HZ) - 1;
-	assert((aclk_div + 1) * CPU_ACLK_HZ == GPLL_HZ && aclk_div <= 0x1f);
+	BUG_ON(!((aclk_div + 1) * CPU_ACLK_HZ == GPLL_HZ && aclk_div <= 0x1f));
 
 	rk_clrsetreg(&cru->cru_clksel_con[0],
 		     CPU_ACLK_PLL_MASK << CPU_ACLK_PLL_SHIFT |
@@ -409,11 +407,11 @@ static void rkclk_init(struct rk3188_cru *cru, struct rk3188_grf *grf,
 		     aclk_div << A9_CPU_DIV_SHIFT);
 
 	hclk_div = ilog2(CPU_ACLK_HZ / CPU_HCLK_HZ);
-	assert((1 << hclk_div) * CPU_HCLK_HZ == CPU_ACLK_HZ && hclk_div < 0x3);
+	BUG_ON(!((1 << hclk_div) * CPU_HCLK_HZ == CPU_ACLK_HZ && hclk_div < 0x3));
 	pclk_div = ilog2(CPU_ACLK_HZ / CPU_PCLK_HZ);
-	assert((1 << pclk_div) * CPU_PCLK_HZ == CPU_ACLK_HZ && pclk_div < 0x4);
+	BUG_ON(!((1 << pclk_div) * CPU_PCLK_HZ == CPU_ACLK_HZ && pclk_div < 0x4));
 	h2p_div = ilog2(CPU_HCLK_HZ / CPU_H2P_HZ);
-	assert((1 << h2p_div) * CPU_H2P_HZ == CPU_HCLK_HZ && pclk_div < 0x3);
+	BUG_ON(!((1 << h2p_div) * CPU_H2P_HZ == CPU_HCLK_HZ && pclk_div < 0x3));
 
 	rk_clrsetreg(&cru->cru_clksel_con[1],
 		     AHB2APB_DIV_MASK << AHB2APB_DIV_SHIFT |
@@ -428,15 +426,13 @@ static void rkclk_init(struct rk3188_cru *cru, struct rk3188_grf *grf,
 	 * set up dependent divisors for PCLK/HCLK and ACLK clocks.
 	 */
 	aclk_div = GPLL_HZ / PERI_ACLK_HZ - 1;
-	assert((aclk_div + 1) * PERI_ACLK_HZ == GPLL_HZ && aclk_div < 0x1f);
+	BUG_ON(!((aclk_div + 1) * PERI_ACLK_HZ == GPLL_HZ && aclk_div < 0x1f));
 
 	hclk_div = ilog2(PERI_ACLK_HZ / PERI_HCLK_HZ);
-	assert((1 << hclk_div) * PERI_HCLK_HZ ==
-		PERI_ACLK_HZ && (hclk_div < 0x4));
+	BUG_ON(!((1 << hclk_div) * PERI_HCLK_HZ == PERI_ACLK_HZ && (hclk_div < 0x4)));
 
 	pclk_div = ilog2(PERI_ACLK_HZ / PERI_PCLK_HZ);
-	assert((1 << pclk_div) * PERI_PCLK_HZ ==
-		PERI_ACLK_HZ && (pclk_div < 0x4));
+	BUG_ON(!((1 << pclk_div) * PERI_PCLK_HZ == PERI_ACLK_HZ && (pclk_div < 0x4)));
 
 	rk_clrsetreg(&cru->cru_clksel_con[10],
 		     PERI_PCLK_DIV_MASK << PERI_PCLK_DIV_SHIFT |

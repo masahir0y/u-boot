@@ -38,7 +38,7 @@ static disk_partition_t *part_info;
 
 void ext4fs_set_blk_dev(struct blk_desc *rbdd, disk_partition_t *info)
 {
-	assert(rbdd->blksz == (1 << rbdd->log2blksz));
+	BUG_ON(rbdd->blksz != (1 << rbdd->log2blksz));
 	ext4fs_blk_desc = rbdd;
 	get_fs()->dev_desc = rbdd;
 	part_info = info;

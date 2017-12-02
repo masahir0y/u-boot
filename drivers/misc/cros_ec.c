@@ -308,7 +308,7 @@ static int ec_command_inptr(struct cros_ec_dev *dev, uint8_t cmd,
 	debug("%s: len=%d, din=%p\n", __func__, len, din);
 	if (dinp) {
 		/* If we have any data to return, it must be 64bit-aligned */
-		assert(len <= 0 || !((uintptr_t)din & 7));
+		BUG_ON(!(len <= 0 || !((uintptr_t)din & 7)));
 		*dinp = din;
 	}
 
@@ -338,7 +338,7 @@ static int ec_command(struct cros_ec_dev *dev, uint8_t cmd, int cmd_version,
 	uint8_t *in_buffer;
 	int len;
 
-	assert((din_len == 0) || din);
+	BUG_ON(!((din_len == 0) || din));
 	len = ec_command_inptr(dev, cmd, cmd_version, dout, dout_len,
 			&in_buffer, din_len);
 	if (len > 0) {
@@ -347,7 +347,7 @@ static int ec_command(struct cros_ec_dev *dev, uint8_t cmd, int cmd_version,
 		 * disregard the result.
 		 */
 		if (din && in_buffer) {
-			assert(len <= din_len);
+			BUG_ON(len > din_len);
 			memmove(din, in_buffer, len);
 		}
 	}
@@ -756,7 +756,7 @@ static int cros_ec_flash_write_block(struct cros_ec_dev *dev,
 
 	p->offset = offset;
 	p->size = size;
-	assert(data && p->size <= EC_FLASH_WRITE_VER0_SIZE);
+	BUG_ON(!(data && p->size <= EC_FLASH_WRITE_VER0_SIZE));
 	memcpy(p + 1, data, p->size);
 
 	ret = ec_command_inptr(dev, EC_CMD_FLASH_WRITE, 0,
@@ -787,7 +787,7 @@ static int cros_ec_flash_write_burst_size(struct cros_ec_dev *dev)
  */
 static int cros_ec_data_is_erased(const uint32_t *data, int size)
 {
-	assert(!(size & 3));
+	BUG_ON((size & 3));
 	size /= sizeof(uint32_t);
 	for (; size > 0; size -= 4, data++)
 		if (*data != -1U)

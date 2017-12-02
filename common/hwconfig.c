@@ -248,37 +248,37 @@ int main()
 
 	ret = hwconfig_arg("key1", &len);
 	printf("%zd %.*s\n", len, (int)len, ret);
-	assert(len == 29);
-	assert(hwconfig_arg_cmp("key1", "subkey1=value1,subkey2=value2"));
-	assert(!strncmp(ret, "subkey1=value1,subkey2=value2", len));
+	BUG_ON(len != 29);
+	BUG_ON(!hwconfig_arg_cmp("key1", "subkey1=value1,subkey2=value2"));
+	BUG_ON(strncmp(ret, "subkey1=value1,subkey2=value2", len));
 
 	ret = hwconfig_subarg("key1", "subkey1", &len);
 	printf("%zd %.*s\n", len, (int)len, ret);
-	assert(len == 6);
-	assert(hwconfig_subarg_cmp("key1", "subkey1", "value1"));
-	assert(!strncmp(ret, "value1", len));
+	BUG_ON(len != 6);
+	BUG_ON(!hwconfig_subarg_cmp("key1", "subkey1", "value1"));
+	BUG_ON(strncmp(ret, "value1", len));
 
 	ret = hwconfig_subarg("key1", "subkey2", &len);
 	printf("%zd %.*s\n", len, (int)len, ret);
-	assert(len == 6);
-	assert(hwconfig_subarg_cmp("key1", "subkey2", "value2"));
-	assert(!strncmp(ret, "value2", len));
+	BUG_ON(len != 6);
+	BUG_ON(!hwconfig_subarg_cmp("key1", "subkey2", "value2"));
+	BUG_ON(strncmp(ret, "value2", len));
 
 	ret = hwconfig_arg("key2", &len);
 	printf("%zd %.*s\n", len, (int)len, ret);
-	assert(len == 6);
-	assert(hwconfig_arg_cmp("key2", "value3"));
-	assert(!strncmp(ret, "value3", len));
+	BUG_ON(len != 6);
+	BUG_ON(!hwconfig_arg_cmp("key2", "value3"));
+	BUG_ON(strncmp(ret, "value3", len));
 
-	assert(hwconfig("key3"));
-	assert(hwconfig_arg("key4", &len) == NULL);
-	assert(hwconfig_arg("bogus", &len) == NULL);
+	BUG_ON(!hwconfig("key3"));
+	BUG_ON(hwconfig_arg("key4", &len));
+	BUG_ON(hwconfig_arg("bogus", &len));
 
 	unenv_set("hwconfig");
 
-	assert(hwconfig(NULL) == 0);
-	assert(hwconfig("") == 0);
-	assert(hwconfig("key3") == 0);
+	BUG_ON(hwconfig(NULL));
+	BUG_ON(hwconfig(""));
+	BUG_ON(hwconfig("key3"));
 
 	return 0;
 }

@@ -74,7 +74,7 @@ static struct clk_pll *get_pll(enum clock_id clkid)
 	struct clk_rst_ctlr *clkrst =
 			(struct clk_rst_ctlr *)NV_PA_CLK_RST_BASE;
 
-	assert(clock_id_is_pll(clkid));
+	BUG_ON(!clock_id_is_pll(clkid));
 	if (clkid >= (enum clock_id)TEGRA_CLK_PLLS) {
 		debug("%s: Invalid PLL %d\n", __func__, clkid);
 		return NULL;
@@ -94,7 +94,7 @@ int clock_ll_read_pll(enum clock_id clkid, u32 *divm, u32 *divn,
 	struct clk_pll_info *pllinfo = &tegra_pll_info_table[clkid];
 	u32 data;
 
-	assert(clkid != CLOCK_ID_USB);
+	BUG_ON(clkid == CLOCK_ID_USB);
 
 	/* Safety check, adds to code size but is small */
 	if (!clock_id_is_pll(clkid) || clkid == CLOCK_ID_USB)
@@ -454,7 +454,7 @@ unsigned clock_adjust_periph_pll_div(enum periph_id periph_id,
 	if (extra_div)
 		*extra_div = xdiv;
 
-	assert(divider >= 0);
+	BUG_ON(0 > divider);
 	if (adjust_periph_pll(periph_id, source, mux_bits, divider))
 		return -1U;
 	debug("periph %d, rate=%d, reg=%p = %x\n", periph_id, rate,
@@ -515,7 +515,7 @@ void reset_cmplx_set_enable(int cpu, int which, int reset)
 	u32 mask;
 
 	/* Form the mask, which depends on the cpu chosen (2 or 4) */
-	assert(cpu >= 0 && cpu < MAX_NUM_CPU);
+	BUG_ON(!(cpu >= 0 && cpu < MAX_NUM_CPU));
 	mask = which << cpu;
 
 	/* either enable or disable those reset for that CPU */
@@ -665,7 +665,7 @@ int clock_decode_periph_id(struct udevice *dev)
 	if (err)
 		return -1;
 	id = clk_id_to_periph_id(cell[1]);
-	assert(clock_periph_id_isvalid(id));
+	BUG_ON(!clock_periph_id_isvalid(id));
 	return id;
 }
 #endif /* CONFIG_IS_ENABLED(OF_CONTROL) */

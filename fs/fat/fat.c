@@ -705,7 +705,7 @@ static void fat_itr_child(fat_itr *itr, fat_itr *parent)
 	fsdata *mydata = parent->fsdata;  /* for silly macros */
 	unsigned clustnum = START(parent->dent);
 
-	assert(fat_itr_isdir(parent));
+	BUG_ON(!fat_itr_isdir(parent));
 
 	itr->fsdata = parent->fsdata;
 	if (clustnum > 0) {

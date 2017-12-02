@@ -180,13 +180,13 @@ static int test_fast_enable(void)
 		TPM_CHECK(tpm_get_flags(&disable, &deactivated, NULL));
 		printf("\tdisable is %d, deactivated is %d\n", disable,
 		       deactivated);
-		assert(disable == 1 && deactivated == 1);
+		BUG_ON(!(disable == 1 && deactivated == 1));
 		TPM_CHECK(tpm_physical_enable());
 		TPM_CHECK(tpm_physical_set_deactivated(0));
 		TPM_CHECK(tpm_get_flags(&disable, &deactivated, NULL));
 		printf("\tdisable is %d, deactivated is %d\n", disable,
 		       deactivated);
-		assert(disable == 0 && deactivated == 0);
+		BUG_ON(!(disable == 0 && deactivated == 0));
 	}
 	printf("\tdone\n");
 	return 0;
@@ -213,22 +213,22 @@ static int test_global_lock(void)
 	/* Verifies that write to index0 fails */
 	x = 1;
 	result = tpm_nv_write_value(INDEX0, (uint8_t *)&x, sizeof(x));
-	assert(result == TPM_AREA_LOCKED);
+	BUG_ON(result != TPM_AREA_LOCKED);
 	TPM_CHECK(tpm_nv_read_value(INDEX0, (uint8_t *)&x, sizeof(x)));
-	assert(x == 0);
+	BUG_ON(x);
 	/* Verifies that write to index1 is still possible */
 	x = 2;
 	TPM_CHECK(tpm_nv_write_value(INDEX1, (uint8_t *)&x, sizeof(x)));
 	TPM_CHECK(tpm_nv_read_value(INDEX1, (uint8_t *)&x, sizeof(x)));
-	assert(x == 2);
+	BUG_ON(x != 2);
 	/* Turns off PP */
 	tpm_tsc_physical_presence(PHYS_PRESENCE);
 	/* Verifies that write to index1 fails */
 	x = 3;
 	result = tpm_nv_write_value(INDEX1, (uint8_t *)&x, sizeof(x));
-	assert(result == TPM_BAD_PRESENCE);
+	BUG_ON(result != TPM_BAD_PRESENCE);
 	TPM_CHECK(tpm_nv_read_value(INDEX1, (uint8_t *)&x, sizeof(x)));
-	assert(x == 2);
+	BUG_ON(x != 2);
 	printf("\tdone\n");
 	return 0;
 }
@@ -325,7 +325,7 @@ static int test_redefine_unowned(void)
 	TPM_CHECK(TlclStartupIfNeeded());
 	TPM_CHECK(tpm_self_test_full());
 	TPM_CHECK(tpm_tsc_physical_presence(PRESENCE));
-	assert(!tpm_is_owned());
+	BUG_ON(tpm_is_owned());
 
 	/* Ensures spaces exist. */
 	TPM_CHECK(tpm_nv_read_value(INDEX0, (uint8_t *)&x, sizeof(x)));
@@ -344,7 +344,7 @@ static int test_redefine_unowned(void)
 
 	/* Verifies that index0 cannot be redefined */
 	result = tpm_nv_define_space(INDEX0, perm, sizeof(uint32_t));
-	assert(result == TPM_AREA_LOCKED);
+	BUG_ON(result != TPM_AREA_LOCKED);
 
 	/* Checks that index1 can */
 	TPM_CHECK(tpm_nv_define_space(INDEX1, perm, 2 * sizeof(uint32_t)));
@@ -355,9 +355,9 @@ static int test_redefine_unowned(void)
 
 	/* Verifies that neither index0 nor index1 can be redefined */
 	result = tpm_nv_define_space(INDEX0, perm, sizeof(uint32_t));
-	assert(result == TPM_BAD_PRESENCE);
+	BUG_ON(result != TPM_BAD_PRESENCE);
 	result = tpm_nv_define_space(INDEX1, perm, sizeof(uint32_t));
-	assert(result == TPM_BAD_PRESENCE);
+	BUG_ON(result != TPM_BAD_PRESENCE);
 
 	printf("done\n");
 	return 0;
@@ -376,9 +376,9 @@ static int test_space_perm(void)
 	TPM_CHECK(tpm_continue_self_test());
 	TPM_CHECK(tpm_tsc_physical_presence(PRESENCE));
 	TPM_CHECK(tpm_get_permissions(INDEX0, &perm));
-	assert((perm & PERMPPGL) == PERMPPGL);
+	BUG_ON((perm & PERMPPGL) != PERMPPGL);
 	TPM_CHECK(tpm_get_permissions(INDEX1, &perm));
-	assert((perm & PERMPP) == PERMPP);
+	BUG_ON((perm & PERMPP) != PERMPP);
 	printf("done\n");
 	return 0;
 }
@@ -469,7 +469,7 @@ static int test_write_limit(void)
 		case TPM_SUCCESS:
 			break;
 		case TPM_MAXNVWRITES:
-			assert(i >= TPM_MAX_NV_WRITES_NOOWNER);
+			BUG_ON(TPM_MAX_NV_WRITES_NOOWNER > i);
 		default:
 			pr_err("\tunexpected error code %d (0x%x)\n",
 			      result, result);

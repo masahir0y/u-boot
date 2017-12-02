@@ -165,8 +165,8 @@ void pinmux_set_func(enum pmux_pingrp pin, enum pmux_func func)
 		return;
 
 	/* Error check on pin and func */
-	assert(pmux_pingrp_isvalid(pin));
-	assert(pmux_func_isvalid(func));
+	BUG_ON(!pmux_pingrp_isvalid(pin));
+	BUG_ON(!pmux_func_isvalid(func));
 
 	if (func >= PMUX_FUNC_RSVD1) {
 		mux = (func - PMUX_FUNC_RSVD1) & 3;
@@ -179,7 +179,7 @@ void pinmux_set_func(enum pmux_pingrp pin, enum pmux_func func)
 			}
 		}
 	}
-	assert(mux != -1);
+	BUG_ON(mux == -1);
 
 	val = readl(reg);
 	val &= ~(3 << MUX_SHIFT(pin));
@@ -193,8 +193,8 @@ void pinmux_set_pullupdown(enum pmux_pingrp pin, enum pmux_pull pupd)
 	u32 val;
 
 	/* Error check on pin and pupd */
-	assert(pmux_pingrp_isvalid(pin));
-	assert(pmux_pin_pupd_isvalid(pupd));
+	BUG_ON(!pmux_pingrp_isvalid(pin));
+	BUG_ON(!pmux_pin_pupd_isvalid(pupd));
 
 	val = readl(reg);
 	val &= ~(3 << PULL_SHIFT(pin));
@@ -208,8 +208,8 @@ static void pinmux_set_tristate(enum pmux_pingrp pin, int tri)
 	u32 val;
 
 	/* Error check on pin */
-	assert(pmux_pingrp_isvalid(pin));
-	assert(pmux_pin_tristate_isvalid(tri));
+	BUG_ON(!pmux_pingrp_isvalid(pin));
+	BUG_ON(!pmux_pin_tristate_isvalid(tri));
 
 	val = readl(reg);
 	if (tri == PMUX_TRI_TRISTATE)
@@ -239,8 +239,8 @@ void pinmux_set_io(enum pmux_pingrp pin, enum pmux_pin_io io)
 		return;
 
 	/* Error check on pin and io */
-	assert(pmux_pingrp_isvalid(pin));
-	assert(pmux_pin_io_isvalid(io));
+	BUG_ON(!pmux_pingrp_isvalid(pin));
+	BUG_ON(!pmux_pin_io_isvalid(io));
 
 	val = readl(reg);
 	if (io == PMUX_PIN_INPUT)
@@ -261,8 +261,8 @@ static void pinmux_set_lock(enum pmux_pingrp pin, enum pmux_pin_lock lock)
 		return;
 
 	/* Error check on pin and lock */
-	assert(pmux_pingrp_isvalid(pin));
-	assert(pmux_pin_lock_isvalid(lock));
+	BUG_ON(!pmux_pingrp_isvalid(pin));
+	BUG_ON(!pmux_pin_lock_isvalid(lock));
 
 	val = readl(reg);
 	if (lock == PMUX_PIN_LOCK_ENABLE) {
@@ -288,8 +288,8 @@ static void pinmux_set_od(enum pmux_pingrp pin, enum pmux_pin_od od)
 		return;
 
 	/* Error check on pin and od */
-	assert(pmux_pingrp_isvalid(pin));
-	assert(pmux_pin_od_isvalid(od));
+	BUG_ON(!pmux_pingrp_isvalid(pin));
+	BUG_ON(!pmux_pin_od_isvalid(od));
 
 	val = readl(reg);
 	if (od == PMUX_PIN_OD_ENABLE)
@@ -313,8 +313,8 @@ static void pinmux_set_ioreset(enum pmux_pingrp pin,
 		return;
 
 	/* Error check on pin and ioreset */
-	assert(pmux_pingrp_isvalid(pin));
-	assert(pmux_pin_ioreset_isvalid(ioreset));
+	BUG_ON(!pmux_pingrp_isvalid(pin));
+	BUG_ON(!pmux_pin_ioreset_isvalid(ioreset));
 
 	val = readl(reg);
 	if (ioreset == PMUX_PIN_IO_RESET_ENABLE)
@@ -338,8 +338,8 @@ static void pinmux_set_rcv_sel(enum pmux_pingrp pin,
 		return;
 
 	/* Error check on pin and rcv_sel */
-	assert(pmux_pingrp_isvalid(pin));
-	assert(pmux_pin_rcv_sel_isvalid(rcv_sel));
+	BUG_ON(!pmux_pingrp_isvalid(pin));
+	BUG_ON(!pmux_pin_rcv_sel_isvalid(rcv_sel));
 
 	val = readl(reg);
 	if (rcv_sel == PMUX_PIN_RCV_SEL_HIGH)
@@ -363,8 +363,8 @@ static void pinmux_set_e_io_hv(enum pmux_pingrp pin,
 		return;
 
 	/* Error check on pin and e_io_hv */
-	assert(pmux_pingrp_isvalid(pin));
-	assert(pmux_pin_e_io_hv_isvalid(e_io_hv));
+	BUG_ON(!pmux_pingrp_isvalid(pin));
+	BUG_ON(!pmux_pin_e_io_hv_isvalid(e_io_hv));
 
 	val = readl(reg);
 	if (e_io_hv == PMUX_PIN_E_IO_HV_HIGH)
@@ -388,8 +388,8 @@ static void pinmux_set_schmt(enum pmux_pingrp pin, enum pmux_schmt schmt)
 		return;
 
 	/* Error check pad */
-	assert(pmux_pingrp_isvalid(pin));
-	assert(pmux_schmt_isvalid(schmt));
+	BUG_ON(!pmux_pingrp_isvalid(pin));
+	BUG_ON(!pmux_schmt_isvalid(schmt));
 
 	val = readl(reg);
 	if (schmt == PMUX_SCHMT_ENABLE)
@@ -413,8 +413,8 @@ static void pinmux_set_hsm(enum pmux_pingrp pin, enum pmux_hsm hsm)
 		return;
 
 	/* Error check pad */
-	assert(pmux_pingrp_isvalid(pin));
-	assert(pmux_hsm_isvalid(hsm));
+	BUG_ON(!pmux_pingrp_isvalid(pin));
+	BUG_ON(!pmux_hsm_isvalid(hsm));
 
 	val = readl(reg);
 	if (hsm == PMUX_HSM_ENABLE)
@@ -523,8 +523,8 @@ static void pinmux_set_drvup_slwf(enum pmux_drvgrp grp, int slwf)
 		return;
 
 	/* Error check on pad and slwf */
-	assert(pmux_drvgrp_isvalid(grp));
-	assert(pmux_slw_isvalid(slwf));
+	BUG_ON(!pmux_drvgrp_isvalid(grp));
+	BUG_ON(!pmux_slw_isvalid(slwf));
 
 	val = readl(reg);
 	val &= ~SLWF_MASK;
@@ -544,8 +544,8 @@ static void pinmux_set_drvdn_slwr(enum pmux_drvgrp grp, int slwr)
 		return;
 
 	/* Error check on pad and slwr */
-	assert(pmux_drvgrp_isvalid(grp));
-	assert(pmux_slw_isvalid(slwr));
+	BUG_ON(!pmux_drvgrp_isvalid(grp));
+	BUG_ON(!pmux_slw_isvalid(slwr));
 
 	val = readl(reg);
 	val &= ~SLWR_MASK;
@@ -565,8 +565,8 @@ static void pinmux_set_drvup(enum pmux_drvgrp grp, int drvup)
 		return;
 
 	/* Error check on pad and drvup */
-	assert(pmux_drvgrp_isvalid(grp));
-	assert(pmux_drv_isvalid(drvup));
+	BUG_ON(!pmux_drvgrp_isvalid(grp));
+	BUG_ON(!pmux_drv_isvalid(drvup));
 
 	val = readl(reg);
 	val &= ~DRVUP_MASK;
@@ -586,8 +586,8 @@ static void pinmux_set_drvdn(enum pmux_drvgrp grp, int drvdn)
 		return;
 
 	/* Error check on pad and drvdn */
-	assert(pmux_drvgrp_isvalid(grp));
-	assert(pmux_drv_isvalid(drvdn));
+	BUG_ON(!pmux_drvgrp_isvalid(grp));
+	BUG_ON(!pmux_drv_isvalid(drvdn));
 
 	val = readl(reg);
 	val &= ~DRVDN_MASK;
@@ -608,8 +608,8 @@ static void pinmux_set_lpmd(enum pmux_drvgrp grp, enum pmux_lpmd lpmd)
 		return;
 
 	/* Error check pad and lpmd value */
-	assert(pmux_drvgrp_isvalid(grp));
-	assert(pmux_lpmd_isvalid(lpmd));
+	BUG_ON(!pmux_drvgrp_isvalid(grp));
+	BUG_ON(!pmux_lpmd_isvalid(lpmd));
 
 	val = readl(reg);
 	val &= ~LPMD_MASK;
@@ -631,8 +631,8 @@ static void pinmux_set_schmt(enum pmux_drvgrp grp, enum pmux_schmt schmt)
 		return;
 
 	/* Error check pad */
-	assert(pmux_drvgrp_isvalid(grp));
-	assert(pmux_schmt_isvalid(schmt));
+	BUG_ON(!pmux_drvgrp_isvalid(grp));
+	BUG_ON(!pmux_schmt_isvalid(schmt));
 
 	val = readl(reg);
 	if (schmt == PMUX_SCHMT_ENABLE)
@@ -656,8 +656,8 @@ static void pinmux_set_hsm(enum pmux_drvgrp grp, enum pmux_hsm hsm)
 		return;
 
 	/* Error check pad */
-	assert(pmux_drvgrp_isvalid(grp));
-	assert(pmux_hsm_isvalid(hsm));
+	BUG_ON(!pmux_drvgrp_isvalid(grp));
+	BUG_ON(!pmux_hsm_isvalid(hsm));
 
 	val = readl(reg);
 	if (hsm == PMUX_HSM_ENABLE)
@@ -714,8 +714,8 @@ static void pinmux_mipipadctrl_set_func(enum pmux_mipipadctrlgrp grp,
 		return;
 
 	/* Error check grp and func */
-	assert(pmux_mipipadctrlgrp_isvalid(grp));
-	assert(pmux_func_isvalid(func));
+	BUG_ON(!pmux_mipipadctrlgrp_isvalid(grp));
+	BUG_ON(!pmux_func_isvalid(func));
 
 	if (func >= PMUX_FUNC_RSVD1) {
 		mux = (func - PMUX_FUNC_RSVD1) & 1;
@@ -729,7 +729,7 @@ static void pinmux_mipipadctrl_set_func(enum pmux_mipipadctrlgrp grp,
 			}
 		}
 	}
-	assert(mux != -1);
+	BUG_ON(mux == -1);
 
 	val = readl(reg);
 	val &= ~(1 << 1);

@@ -852,7 +852,7 @@ static int device_parse(const char *const mtd_dev, const char **ret, struct mtd_
 
 	debug("===device_parse===\n");
 
-	assert(retdev);
+	BUG_ON(!retdev);
 	*retdev = NULL;
 
 	if (ret)

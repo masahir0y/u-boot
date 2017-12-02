@@ -222,7 +222,7 @@ static void setup_response(struct sandbox_flash_priv *priv, void *resp,
 	csw->dCSWDataResidue = 0;
 	csw->bCSWStatus = CSWSTATUS_GOOD;
 
-	assert(!resp || resp == priv->buff);
+	BUG_ON(!(!resp || resp == priv->buff));
 	priv->buff_used = size;
 }
 

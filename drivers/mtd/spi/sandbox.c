@@ -138,7 +138,7 @@ static int sandbox_sf_probe(struct udevice *dev)
 	if (!pdata->filename) {
 		struct sandbox_state *state = state_get_current();
 
-		assert(bus->seq != -1);
+		BUG_ON(bus->seq == -1);
 		if (bus->seq < CONFIG_SANDBOX_SPI_MAX_BUS)
 			spec = state->spi[bus->seq][cs].spec;
 		if (!spec) {
@@ -416,7 +416,7 @@ static int sandbox_sf_xfer(struct udevice *dev, unsigned int bitlen,
 
 			cnt = bytes - pos;
 			debug(" tx: read(%u)\n", cnt);
-			assert(tx);
+			BUG_ON(!tx);
 			ret = os_read(sbsf->fd, tx + pos, cnt);
 			if (ret < 0) {
 				puts("sandbox_sf: os_read() failed\n");

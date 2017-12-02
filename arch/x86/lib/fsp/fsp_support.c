@@ -91,7 +91,7 @@ void fsp_continue(u32 status, void *hob_list)
 {
 	post_code(POST_MRC);
 
-	assert(status == 0);
+	BUG_ON(status);
 
 	/* The boot loader main function entry */
 	fsp_init_done(hob_list);
@@ -126,7 +126,7 @@ void fsp_init(u32 stack_top, u32 boot_mode, void *nvs_buf)
 			fsp_hdr->cfg_region_off);
 
 	/* Verify the VPD data region is valid */
-	assert(fsp_vpd->sign == VPD_IMAGE_ID);
+	BUG_ON(fsp_vpd->sign != VPD_IMAGE_ID);
 
 	fsp_upd = &config_data.fsp_upd;
 
@@ -135,7 +135,7 @@ void fsp_init(u32 stack_top, u32 boot_mode, void *nvs_buf)
 	       sizeof(struct upd_region));
 
 	/* Verify the UPD data region is valid */
-	assert(fsp_upd->terminator == UPD_TERMINATOR);
+	BUG_ON(fsp_upd->terminator != UPD_TERMINATOR);
 #endif
 
 	memset(&rt_buf, 0, sizeof(struct fspinit_rtbuf));

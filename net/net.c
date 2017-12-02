@@ -784,7 +784,7 @@ int net_send_udp_packet(uchar *ether, struct in_addr dest, int dport, int sport,
 	int pkt_hdr_size;
 
 	/* make sure the net_tx_packet is initialized (net_init() was called) */
-	assert(net_tx_packet != NULL);
+	BUG_ON(!net_tx_packet);
 	if (net_tx_packet == NULL)
 		return -1;
 

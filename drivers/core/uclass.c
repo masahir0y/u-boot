@@ -371,7 +371,7 @@ int uclass_get_device_tail(struct udevice *dev, int ret, struct udevice **devp)
 	if (ret)
 		return ret;
 
-	assert(dev);
+	BUG_ON(!dev);
 	ret = device_probe(dev);
 	if (ret)
 		return ret;
@@ -569,7 +569,7 @@ int uclass_resolve_seq(struct udevice *dev)
 	int seq;
 	int ret;
 
-	assert(dev->seq == -1);
+	BUG_ON(dev->seq != -1);
 	ret = uclass_find_device_by_seq(dev->uclass->uc_drv->id, dev->req_seq,
 					false, &dup);
 	if (!ret) {

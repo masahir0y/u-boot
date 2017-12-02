@@ -1405,8 +1405,8 @@ static int clock_calc_best_scalar(unsigned int main_scaler_bits,
 	debug("Input Rate is %u, Target is %u, Cap is %u\n", input_rate,
 			target_rate, cap);
 
-	assert(best_fine_scalar != NULL);
-	assert(main_scaler_bits <= fine_scalar_bits);
+	BUG_ON(!best_fine_scalar);
+	BUG_ON(main_scaler_bits > fine_scalar_bits);
 
 	*best_fine_scalar = 1;
 

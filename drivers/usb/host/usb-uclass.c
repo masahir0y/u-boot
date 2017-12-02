@@ -211,7 +211,7 @@ static void usb_scan_bus(struct udevice *bus, bool recurse)
 
 	priv = dev_get_uclass_priv(bus);
 
-	assert(recurse);	/* TODO: Support non-recusive */
+	BUG_ON(!recurse);	/* TODO: Support non-recusive */
 
 	printf("scanning bus %d for devices... ", bus->seq);
 	debug("\n");
@@ -744,7 +744,7 @@ struct udevice *usb_get_bus(struct udevice *dev)
 		bus = bus->parent;
 	if (!bus) {
 		/* By design this cannot happen */
-		assert(bus);
+		BUG_ON(!bus);
 		debug("USB HUB '%s' does not have a controller\n", dev->name);
 	}
 

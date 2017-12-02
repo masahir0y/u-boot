@@ -62,7 +62,7 @@ int __efi_entry_check(void)
 {
 	int ret = entry_count++ == 0;
 #ifdef CONFIG_ARM
-	assert(efi_gd);
+	BUG_ON(!efi_gd);
 	app_gd = gd;
 	gd = efi_gd;
 #endif

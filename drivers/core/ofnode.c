@@ -18,7 +18,7 @@
 
 int ofnode_read_u32(ofnode node, const char *propname, u32 *outp)
 {
-	assert(ofnode_valid(node));
+	BUG_ON(!ofnode_valid(node));
 	debug("%s: %s: ", __func__, propname);
 
 	if (ofnode_is_np(node)) {
@@ -42,7 +42,7 @@ int ofnode_read_u32(ofnode node, const char *propname, u32 *outp)
 
 int ofnode_read_u32_default(ofnode node, const char *propname, u32 def)
 {
-	assert(ofnode_valid(node));
+	BUG_ON(!ofnode_valid(node));
 	ofnode_read_u32(node, propname, &def);
 
 	return def;
@@ -50,7 +50,7 @@ int ofnode_read_u32_default(ofnode node, const char *propname, u32 def)
 
 int ofnode_read_s32_default(ofnode node, const char *propname, s32 def)
 {
-	assert(ofnode_valid(node));
+	BUG_ON(!ofnode_valid(node));
 	ofnode_read_u32(node, propname, (u32 *)&def);
 
 	return def;
@@ -60,7 +60,7 @@ bool ofnode_read_bool(ofnode node, const char *propname)
 {
 	const void *prop;
 
-	assert(ofnode_valid(node));
+	BUG_ON(!ofnode_valid(node));
 	debug("%s: %s: ", __func__, propname);
 
 	prop = ofnode_get_property(node, propname, NULL);
@@ -75,7 +75,7 @@ const char *ofnode_read_string(ofnode node, const char *propname)
 	const char *str = NULL;
 	int len = -1;
 
-	assert(ofnode_valid(node));
+	BUG_ON(!ofnode_valid(node));
 	debug("%s: %s: ", __func__, propname);
 
 	if (ofnode_is_np(node)) {
@@ -107,7 +107,7 @@ ofnode ofnode_find_subnode(ofnode node, const char *subnode_name)
 {
 	ofnode subnode;
 
-	assert(ofnode_valid(node));
+	BUG_ON(!ofnode_valid(node));
 	debug("%s: %s: ", __func__, subnode_name);
 
 	if (ofnode_is_np(node)) {
@@ -132,7 +132,7 @@ ofnode ofnode_find_subnode(ofnode node, const char *subnode_name)
 int ofnode_read_u32_array(ofnode node, const char *propname,
 			  u32 *out_values, size_t sz)
 {
-	assert(ofnode_valid(node));
+	BUG_ON(!ofnode_valid(node));
 	debug("%s: %s: ", __func__, propname);
 
 	if (ofnode_is_np(node)) {
@@ -147,7 +147,7 @@ int ofnode_read_u32_array(ofnode node, const char *propname,
 
 ofnode ofnode_first_subnode(ofnode node)
 {
-	assert(ofnode_valid(node));
+	BUG_ON(!ofnode_valid(node));
 	if (ofnode_is_np(node))
 		return np_to_ofnode(node.np->child);
 
@@ -157,7 +157,7 @@ ofnode ofnode_first_subnode(ofnode node)
 
 ofnode ofnode_next_subnode(ofnode node)
 {
-	assert(ofnode_valid(node));
+	BUG_ON(!ofnode_valid(node));
 	if (ofnode_is_np(node))
 		return np_to_ofnode(node.np->sibling);
 
@@ -167,7 +167,7 @@ ofnode ofnode_next_subnode(ofnode node)
 
 const char *ofnode_get_name(ofnode node)
 {
-	assert(ofnode_valid(node));
+	BUG_ON(!ofnode_valid(node));
 	if (ofnode_is_np(node))
 		return strrchr(node.np->full_name, '/') + 1;
 
@@ -271,7 +271,7 @@ int ofnode_read_string_count(ofnode node, const char *property)
 static void ofnode_from_fdtdec_phandle_args(struct fdtdec_phandle_args *in,
 					    struct ofnode_phandle_args *out)
 {
-	assert(OF_MAX_PHANDLE_ARGS == MAX_PHANDLE_ARGS);
+	BUG_ON(OF_MAX_PHANDLE_ARGS != MAX_PHANDLE_ARGS);
 	out->node = offset_to_ofnode(in->node);
 	out->args_count = in->args_count;
 	memcpy(out->args, in->args, sizeof(out->args));
@@ -280,7 +280,7 @@ static void ofnode_from_fdtdec_phandle_args(struct fdtdec_phandle_args *in,
 static void ofnode_from_of_phandle_args(struct of_phandle_args *in,
 					struct ofnode_phandle_args *out)
 {
-	assert(OF_MAX_PHANDLE_ARGS == MAX_PHANDLE_ARGS);
+	BUG_ON(OF_MAX_PHANDLE_ARGS != MAX_PHANDLE_ARGS);
 	out->node = np_to_ofnode(in->np);
 	out->args_count = in->args_count;
 	memcpy(out->args, in->args, sizeof(out->args));

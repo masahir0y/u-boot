@@ -64,7 +64,7 @@ int clk_get_by_index(struct udevice *dev, int index, struct clk *clk)
 
 	debug("%s(dev=%p, index=%d, clk=%p)\n", __func__, dev, index, clk);
 
-	assert(clk);
+	BUG_ON(!clk);
 	clk->dev = NULL;
 
 	ret = dev_read_phandle_with_args(dev, "clocks", "#clock-cells", 0,

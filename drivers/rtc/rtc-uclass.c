@@ -14,7 +14,7 @@ int dm_rtc_get(struct udevice *dev, struct rtc_time *time)
 {
 	struct rtc_ops *ops = rtc_get_ops(dev);
 
-	assert(ops);
+	BUG_ON(!ops);
 	if (!ops->get)
 		return -ENOSYS;
 	return ops->get(dev, time);
@@ -24,7 +24,7 @@ int dm_rtc_set(struct udevice *dev, struct rtc_time *time)
 {
 	struct rtc_ops *ops = rtc_get_ops(dev);
 
-	assert(ops);
+	BUG_ON(!ops);
 	if (!ops->set)
 		return -ENOSYS;
 	return ops->set(dev, time);
@@ -34,7 +34,7 @@ int dm_rtc_reset(struct udevice *dev)
 {
 	struct rtc_ops *ops = rtc_get_ops(dev);
 
-	assert(ops);
+	BUG_ON(!ops);
 	if (!ops->reset)
 		return -ENOSYS;
 	return ops->reset(dev);
@@ -44,7 +44,7 @@ int rtc_read8(struct udevice *dev, unsigned int reg)
 {
 	struct rtc_ops *ops = rtc_get_ops(dev);
 
-	assert(ops);
+	BUG_ON(!ops);
 	if (!ops->read8)
 		return -ENOSYS;
 	return ops->read8(dev, reg);
@@ -54,7 +54,7 @@ int rtc_write8(struct udevice *dev, unsigned int reg, int val)
 {
 	struct rtc_ops *ops = rtc_get_ops(dev);
 
-	assert(ops);
+	BUG_ON(!ops);
 	if (!ops->write8)
 		return -ENOSYS;
 	return ops->write8(dev, reg, val);

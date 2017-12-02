@@ -184,7 +184,7 @@ int key_matrix_init(struct key_matrix *config, int rows, int cols,
 	config->num_cols = cols;
 	config->key_count = rows * cols;
 	config->ghost_filter = ghost_filter;
-	assert(config->key_count > 0);
+	BUG_ON(0 >= config->key_count);
 
 	return 0;
 }
