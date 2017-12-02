@@ -6,17 +6,24 @@
 #include <linux/compiler.h>
 #include <linux/printk.h>
 
+#ifdef CONFIG_ENABLE_BUG_CHECKS
 #define BUG() do { \
 	printk("BUG at %s:%d/%s()!\n", __FILE__, __LINE__, __func__); \
 	panic("BUG!"); \
 } while (0)
+#define __WARN() 	\
+	printk("WARNING at %s:%d/%s()!\n", __FILE__, __LINE__, __func__)
+#else
+#define BUG()
+#define __WARN()
+#endif
 
 #define BUG_ON(condition) do { if (unlikely(condition)) BUG(); } while (0)
 
 #define WARN_ON(condition) ({						\
 	int __ret_warn_on = !!(condition);				\
 	if (unlikely(__ret_warn_on))					\
-		printk("WARNING at %s:%d/%s()!\n", __FILE__, __LINE__, __func__); \
+		__WARN();						\
 	unlikely(__ret_warn_on);					\
 })
 

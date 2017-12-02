@@ -45,6 +45,13 @@ config USE_TINY_PRINTF
 
 	  The supported format specifiers are %c, %s, %u/%d and %x.
 
+config ENABLE_BUG_CHECKS
+	bool "Enable BUG/BUG_ON() checks and WARN_ON() logs"
+	help
+	  BUG() and BUG_ON() are no-op by default.  This option enables
+	  them to print noisy messages, then reboot or halt the system.
+	  It also enables WARN_ON() messages.
+
 config PANIC_HANG
 	bool "Do not reset the system on fatal error"
 	help
