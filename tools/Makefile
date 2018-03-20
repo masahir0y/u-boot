@@ -67,7 +67,7 @@ LIBFDT_SRCS_SYNCED := fdt.c fdt_wip.c fdt_sw.c fdt_rw.c \
 		fdt_strerror.c fdt_empty_tree.c fdt_addresses.c fdt_overlay.c
 # The following files are locally modified for U-Boot (unfotunately).
 # Use U-Boot own versions from lib/libfdt/.
-LIBFDT_SRCS_UNSYNCED := fdt_ro.c fdt_region.c
+LIBFDT_SRCS_UNSYNCED := fdt_ro.c
 
 LIBFDT_OBJS := $(addprefix libfdt/, $(patsubst %.c, %.o, $(LIBFDT_SRCS_SYNCED))) \
 	       $(addprefix lib/libfdt/, $(patsubst %.c, %.o, $(LIBFDT_SRCS_UNSYNCED)))
@@ -82,6 +82,7 @@ ROCKCHIP_OBS = lib/rc4.o rkcommon.o rkimage.o rksd.o rkspi.o
 dumpimage-mkimage-objs := aisimage.o \
 			atmelimage.o \
 			$(FIT_SIG_OBJS-y) \
+			common/fdt_region.o \
 			common/bootm.o \
 			lib/crc32.o \
 			default_image.o \
@@ -192,7 +193,7 @@ hostprogs-$(CONFIG_STATIC_RELA) += relocate-rela
 hostprogs-$(CONFIG_RISCV) += prelink-riscv
 
 hostprogs-y += fdtgrep
-fdtgrep-objs += $(LIBFDT_OBJS) fdtgrep.o
+fdtgrep-objs += $(LIBFDT_OBJS) common/fdt_region.o fdtgrep.o
 
 hostprogs-$(CONFIG_MIPS) += mips-relocs
 

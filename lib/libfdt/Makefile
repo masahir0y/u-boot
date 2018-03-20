@@ -21,7 +21,4 @@ obj-$(CONFIG_OF_LIBFDT_OVERLAY) += fdt_overlay.o
 # TODO: split out the local modifiction.
 obj-y += fdt_ro.o
 
-# U-Boot own file
-obj-y += fdt_region.o
-
 ccflags-y := -I$(srctree)/scripts/dtc/libfdt
