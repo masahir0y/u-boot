@@ -650,6 +650,8 @@ static int ave_ld11_get_pinmode(struct ave_private *priv)
 	mask = SG_ETPINMODE_EXTPHY | SG_ETPINMODE_RMII(0);
 
 	switch (priv->phy_mode) {
+	case PHY_INTERFACE_MODE_INTERNAL:
+		break;
 	case PHY_INTERFACE_MODE_RMII:
 		val = SG_ETPINMODE_EXTPHY | SG_ETPINMODE_RMII(0);
 		break;
