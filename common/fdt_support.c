@@ -73,6 +73,64 @@ u32 fdt_getprop_u32_default(const void *fdt, const char *path,
 }
 
 /**
+ * fdt_n_addr_cells() - Get the number of address cells for a node
+ *
+ * This walks back up the tree to find the closest #address-cells property
+ * which controls the given node.
+ *
+ * @fdt: pointer to the device tree blob
+ * @nodeoffset: offset of the node to find the address size for
+ * @return number of address cells this node uses
+ */
+int fdt_n_addr_cells(const void *fdt, int nodeoffset)
+{
+	const fdt32_t *ip;
+	int poffset;
+
+	do {
+		poffset = fdt_parent_offset(fdt, nodeoffset);
+		if (poffset >= 0)
+			nodeoffset = poffset;
+
+		ip = fdt_getprop(fdt, nodeoffset, "#size-cells", NULL);
+		if (ip)
+			return fdt32_to_cpu(*ip);
+	} while (poffset >= 0);
+
+	/* No #address-cells property for the root node */
+	return 1;
+}
+
+/**
+ * fdt_n_size_cells() - Get the number of size cells for a node
+ *
+ * This walks back up the tree to find the closest #size-cells property
+ * which controls the given node.
+ *
+ * @fdt:	FDT blob
+ * @np: Node pointer to check
+ * @return number of size cells this node uses
+ */
+int fdt_n_size_cells(const void *fdt, int nodeoffset)
+{
+	const fdt32_t *ip;
+	int poffset;
+
+	do {
+		poffset = fdt_parent_offset(fdt, nodeoffset);
+		if (poffset >= 0)
+			nodeoffset = poffset;
+
+		ip = fdt_getprop(fdt, nodeoffset, "#size-cells", NULL);
+		if (ip)
+			return fdt32_to_cpu(*ip);
+	} while (poffset >= 0);
+
+	/* No #size-cells property for the root node */
+	return 1;
+}
+
+/**
  * fdt_find_and_setprop: Find a node and set it's property
  *
  * @fdt: ptr to device tree

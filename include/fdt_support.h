@@ -16,6 +16,8 @@ u32 fdt_getprop_u32_default_node(const void *fdt, int off, int cell,
 				const char *prop, const u32 dflt);
 u32 fdt_getprop_u32_default(const void *fdt, const char *path,
 				const char *prop, const u32 dflt);
+int fdt_n_addr_cells(const void *fdt, int nodeoffset);
+int fdt_n_size_cells(const void *fdt, int nodeoffset);
 
 /**
  * Add data to the root of the FDT before booting the OS.
