@@ -8,6 +8,7 @@
 #ifndef __SYSCON_H
 #define __SYSCON_H
 
+#include <dm/ofnode.h>
 #include <fdtdec.h>
 
 /**
@@ -81,5 +82,12 @@ struct regmap *syscon_get_regmap_by_driver_data(ulong driver_data);
  *			-ve error code
  */
 void *syscon_get_first_range(ulong driver_data);
+
+/**
+ * syscon_node_to_regmap - get regmap from syscon
+ *
+ * @node:		Device node of syscon
+ */
+struct regmap *syscon_node_to_regmap(ofnode node);
 
 #endif
