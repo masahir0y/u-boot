@@ -1792,7 +1792,6 @@ config CMD_UBI
 	select CRC32
 	select MTD_UBI
 	select CMD_MTDPARTS
-	default y if NAND_SUNXI
 	help
 	  UBI is a software layer above MTD layer which admits use of LVM-like
 	  logical volumes on top of MTD devices, hides some complexities of
