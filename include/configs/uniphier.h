@@ -127,6 +127,8 @@
 #undef  CONFIG_BOOTCOMMAND
 #define CONFIG_BOOTCOMMAND		"run ${bootdev}script; run ${bootdev}boot"
 
+#define CONFIG_PREBOOT			"env exist ${bootdev}preboot && run ${bootdev}preboot"
+
 #define CONFIG_ROOTPATH			"/nfs/root/path"
 #define CONFIG_NFSBOOTCOMMAND						\
 	"setenv bootargs $bootargs root=/dev/nfs rw "			\
