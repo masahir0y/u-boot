@@ -224,6 +224,50 @@
 		#size-cells = <1>;
 		ranges = <0 0 0 0xffffffff>;
 
+		spi0: spi@54006000 {
+			compatible = "socionext,uniphier-scssi";
+			status = "disabled";
+			reg = <0x54006000 0x100>;
+			interrupts = <0 39 4>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_spi0>;
+			clocks = <&peri_clk 11>;
+			resets = <&peri_rst 11>;
+		};
+
+		spi1: spi@54006100 {
+			compatible = "socionext,uniphier-scssi";
+			status = "disabled";
+			reg = <0x54006100 0x100>;
+			interrupts = <0 216 4>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_spi1>;
+			clocks = <&peri_clk 11>;
+			resets = <&peri_rst 11>;
+		};
+
+		spi2: spi@54006200 {
+			compatible = "socionext,uniphier-scssi";
+			status = "disabled";
+			reg = <0x54006200 0x100>;
+			interrupts = <0 229 4>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_spi2>;
+			clocks = <&peri_clk 11>;
+			resets = <&peri_rst 11>;
+		};
+
+		spi3: spi@54006300 {
+			compatible = "socionext,uniphier-scssi";
+			status = "disabled";
+			reg = <0x54006300 0x100>;
+			interrupts = <0 230 4>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_spi3>;
+			clocks = <&peri_clk 11>;
+			resets = <&peri_rst 11>;
+		};
+
 		serial0: serial@54006800 {
 			compatible = "socionext,uniphier-uart";
 			status = "disabled";
@@ -567,6 +611,50 @@
 			efuse@200 {
 				compatible = "socionext,uniphier-efuse";
 				reg = <0x200 0x68>;
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				/* USB cells */
+				usb_rterm0: trim@54,4 {
+					reg = <0x54 1>;
+					bits = <4 2>;
+				};
+				usb_rterm1: trim@55,4 {
+					reg = <0x55 1>;
+					bits = <4 2>;
+				};
+				usb_rterm2: trim@58,4 {
+					reg = <0x58 1>;
+					bits = <4 2>;
+				};
+				usb_rterm3: trim@59,4 {
+					reg = <0x59 1>;
+					bits = <4 2>;
+				};
+				usb_sel_t0: trim@54,0 {
+					reg = <0x54 1>;
+					bits = <0 4>;
+				};
+				usb_sel_t1: trim@55,0 {
+					reg = <0x55 1>;
+					bits = <0 4>;
+				};
+				usb_sel_t2: trim@58,0 {
+					reg = <0x58 1>;
+					bits = <0 4>;
+				};
+				usb_sel_t3: trim@59,0 {
+					reg = <0x59 1>;
+					bits = <0 4>;
+				};
+				usb_hs_i0: trim@56,0 {
+					reg = <0x56 1>;
+					bits = <0 4>;
+				};
+				usb_hs_i2: trim@5a,0 {
+					reg = <0x5a 1>;
+					bits = <0 4>;
+				};
 			};
 		};
 
@@ -660,7 +748,8 @@
 			interrupts = <0 65 4>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&pinctrl_nand>;
-			clocks = <&sys_clk 2>;
+			clock-names = "nand", "nand_x", "ecc";
+			clocks = <&sys_clk 2>, <&sys_clk 3>, <&sys_clk 3>;
 			resets = <&sys_rst 2>;
 		};
 	};
