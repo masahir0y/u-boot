@@ -1,0 +1,133 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+//
+// Device Tree Source for UniPhier NX1 SoC (tentative)
+//
+// Copyright (C) 2019 Socionext Inc.
+//   Author: Masahiro Yamada <yamada.masahiro@socionext.com>
+//   Author: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+
+/memreserve/ 0x80000000 0x02000000;
+
+/ {
+	compatible = "socionext,uniphier-nx1";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&gic>;
+
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+
+		cpu-map {
+			cluster0 {
+				core0 {
+					cpu = <&cpu0>;
+				};
+				core1 {
+					cpu = <&cpu1>;
+				};
+				core2 {
+					cpu = <&cpu2>;
+				};
+				core3 {
+					cpu = <&cpu3>;
+				};
+			};
+		};
+
+		cpu0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53", "arm,armv8";
+			reg = <0 0x000>;
+			enable-method = "psci";
+		};
+
+		cpu1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53", "arm,armv8";
+			reg = <0 0x001>;
+			enable-method = "psci";
+		};
+
+		cpu2: cpu@2 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53", "arm,armv8";
+			reg = <0 0x002>;
+			enable-method = "psci";
+		};
+
+		cpu3: cpu@3 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53", "arm,armv8";
+			reg = <0 0x003>;
+			enable-method = "psci";
+		};
+	};
+
+	psci {
+		compatible = "arm,psci-1.0";
+		method = "smc";
+	};
+
+	clocks {
+		refclk: ref {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <25000000>;
+		};
+	};
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <1 13 4>,
+			     <1 14 4>,
+			     <1 11 4>,
+			     <1 10 4>;
+	};
+
+	soc@0 {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0 0 0 0xffffffff>;
+
+		serial0: serial@14006800 {
+			compatible = "socionext,uniphier-uart";
+			status = "disabled";
+			reg = <0x14006800 0x40>;
+			interrupts = <0 32 4>;
+			clocks = <&peri_clk 0>;
+		};
+
+		perictrl@19820000 {
+			compatible = "socionext,uniphier-pxs3-perictrl",
+				     "simple-mfd", "syscon";
+			reg = <0x19820000 0x200>;
+
+			peri_clk: clock {
+				compatible = "socionext,uniphier-pxs3-peri-clock";
+				#clock-cells = <1>;
+			};
+		};
+
+		gic: interrupt-controller@1fd00000 {
+			compatible = "arm,gic-v3";
+			reg = <0x1fd00000 0x10000>,	/* GICD */
+			      <0x1fd80000 0x80000>;	/* GICR */
+			interrupt-controller;
+			#interrupt-cells = <3>;
+			interrupts = <1 9 4>;
+		};
+
+		sysctrl@11840000 {
+			compatible = "socionext,uniphier-nx1-sysctrl",
+				     "simple-mfd", "syscon";
+			reg = <0x11840000 0x10000>;
+
+			sys_clk: clock {
+				compatible = "socionext,uniphier-nx1-clock";
+				#clock-cells = <1>;
+			};
+		};
+	};
+};
