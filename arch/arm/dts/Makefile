@@ -198,6 +198,8 @@ dtb-$(CONFIG_ARCH_UNIPHIER_LD4) += \
 	uniphier-ld4-ref.dtb
 dtb-$(CONFIG_ARCH_UNIPHIER_LD6B) += \
 	uniphier-ld6b-ref.dtb
+dtb-$(CONFIG_ARCH_UNIPHIER_NX1) += \
+	uniphier-nx1-ref.dtb
 dtb-$(CONFIG_ARCH_UNIPHIER_PRO4) += \
 	uniphier-pro4-ace.dtb \
 	uniphier-pro4-ref.dtb \

@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+//
+// Device Tree Source for UniPhier NX1 Reference Board (tentative)
+//
+// Copyright (C) 2019 Socionext Inc.
+//   Author: Masahiro Yamada <yamada.masahiro@socionext.com>
+//   Author: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+
+/dts-v1/;
+#include "uniphier-nx1.dtsi"
+
+/ {
+	model = "UniPhier NX1 Reference Board";
+	compatible = "socionext,uniphier-nx1-ref", "socionext,uniphier-nx1";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		serial0 = &serial0;
+	};
+
+	memory@20000000 {
+		device_type = "memory";
+		reg = <0 0x20000000 1 0x00000000>;
+	};
+};
+
+&serial0 {
+	status = "okay";
+};
