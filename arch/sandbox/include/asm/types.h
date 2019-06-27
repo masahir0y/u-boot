@@ -18,7 +18,7 @@ typedef unsigned short umode_t;
 /*
  * Number of bits in a C 'long' on this architecture.
  */
-#ifdef	CONFIG_PHYS_64BIT
+#ifdef	CONFIG_HOST_64BIT
 #define BITS_PER_LONG 64
 #else	/* CONFIG_PHYS_64BIT */
 #define BITS_PER_LONG 32

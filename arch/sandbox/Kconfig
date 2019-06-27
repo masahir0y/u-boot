@@ -41,9 +41,4 @@ config HOST_64BIT
 
 endchoice
 
-config SANDBOX_BITS_PER_LONG
-	int
-	default 32 if HOST_32BIT
-	default 64 if HOST_64BIT
-
 endmenu
