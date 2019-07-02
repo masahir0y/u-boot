@@ -107,6 +107,7 @@ static const struct uniphier_serial_clk_data uniphier_serial_clk_data[] = {
 	{ .compatible = "socionext,uniphier-ld11", .clk_rate = 58823529 },
 	{ .compatible = "socionext,uniphier-ld20", .clk_rate = 58823529 },
 	{ .compatible = "socionext,uniphier-pxs3", .clk_rate = 58823529 },
+	{ .compatible = "socionext,uniphier-nx1",  .clk_rate = 133333333 },
 	{ /* sentinel */ },
 };
 

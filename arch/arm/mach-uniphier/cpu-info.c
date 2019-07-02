@@ -58,6 +58,9 @@ int print_cpuinfo(void)
 	case UNIPHIER_PXS3_ID:
 		puts("PXs3");
 		break;
+	case UNIPHIER_NX1_ID:
+		puts("NX1");
+		break;
 	default:
 		printf("Unknown Processor ID (0x%x)\n", id);
 		return -ENOTSUPP;

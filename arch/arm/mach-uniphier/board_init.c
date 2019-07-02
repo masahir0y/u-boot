@@ -103,6 +103,13 @@ static const struct uniphier_initdata uniphier_initdata[] = {
 		.clk_init = uniphier_pxs3_clk_init,
 	},
 #endif
+#if defined(CONFIG_ARCH_UNIPHIER_NX1)
+	{
+		.soc_id = UNIPHIER_NX1_ID,
+		.pll_init = uniphier_nx1_pll_init,
+		.clk_init = uniphier_nx1_clk_init,
+	},
+#endif
 };
 UNIPHIER_DEFINE_SOCDATA_FUNC(uniphier_get_initdata, uniphier_initdata)
 
@@ -118,7 +125,8 @@ int board_init(void)
 		return -EINVAL;
 	}
 
-	initdata->sbc_init();
+	if (initdata->sbc_init)
+		initdata->sbc_init();
 
 	support_card_init();
 

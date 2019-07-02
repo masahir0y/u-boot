@@ -76,6 +76,11 @@ config ARCH_UNIPHIER_PXS3
 	depends on ARCH_UNIPHIER_V8_MULTI
 	default y
 
+config ARCH_UNIPHIER_NX1
+	bool "Enable UniPhier NX1 SoC support"
+	depends on ARCH_UNIPHIER_V8_MULTI
+	default y
+
 config CACHE_UNIPHIER
 	bool "Enable the UniPhier L2 cache controller"
 	depends on ARCH_UNIPHIER_32BIT

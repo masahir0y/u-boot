@@ -129,6 +129,16 @@ static const struct uniphier_boot_device_info uniphier_boot_device_info[] = {
 		.have_internal_stm = false,
 	},
 #endif
+#if defined(CONFIG_ARCH_UNIPHIER_NX1)
+	{
+		.soc_id = UNIPHIER_NX1_ID,
+		.boot_device_sel_shift = 0,
+		.boot_device_table = uniphier_nx1_boot_device_table,
+		.boot_device_count = &uniphier_nx1_boot_device_count,
+		.boot_device_is_sd = uniphier_nx1_boot_device_is_sd,
+		.have_internal_stm = false,
+	},
+#endif
 };
 UNIPHIER_DEFINE_SOCDATA_FUNC(uniphier_get_boot_device_info,
 			     uniphier_boot_device_info)

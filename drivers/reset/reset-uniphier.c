@@ -98,6 +98,12 @@ static const struct uniphier_reset_data uniphier_pxs3_sys_reset_data[] = {
 	UNIPHIER_RESET_END,
 };
 
+static const struct uniphier_reset_data uniphier_nx1_sys_reset_data[] = {
+	UNIPHIER_RESETX(4, 0x2008, 0),		/* eMMC */
+	UNIPHIER_RESETX(6, 0x200c, 0),		/* ETHER */
+	UNIPHIER_RESET_END,
+};
+
 /* Media I/O reset data */
 #define UNIPHIER_MIO_RESET_SD(id, ch)			\
 	UNIPHIER_RESETX((id), 0x110 + 0x200 * (ch), 0)
@@ -294,6 +300,10 @@ static const struct udevice_id uniphier_reset_match[] = {
 		.compatible = "socionext,uniphier-pxs3-reset",
 		.data = (ulong)uniphier_pxs3_sys_reset_data,
 	},
+	{
+		.compatible = "socionext,uniphier-nx1-reset",
+		.data = (ulong)uniphier_nx1_sys_reset_data,
+	},
 	/* Media I/O reset */
 	{
 		.compatible = "socionext,uniphier-ld4-mio-reset",
@@ -331,6 +341,10 @@ static const struct udevice_id uniphier_reset_match[] = {
 		.compatible = "socionext,uniphier-pxs3-sd-reset",
 		.data = (ulong)uniphier_mio_reset_data,
 	},
+	{
+		.compatible = "socionext,uniphier-nx1-sd-reset",
+		.data = (ulong)uniphier_mio_reset_data,
+	},
 	/* Peripheral reset */
 	{
 		.compatible = "socionext,uniphier-ld4-peri-reset",
@@ -362,6 +376,10 @@ static const struct udevice_id uniphier_reset_match[] = {
 	},
 	{
 		.compatible = "socionext,uniphier-pxs3-peri-reset",
+		.data = (ulong)uniphier_pro4_peri_reset_data,
+	},
+	{
+		.compatible = "socionext,uniphier-nx1-peri-reset",
 		.data = (ulong)uniphier_pro4_peri_reset_data,
 	},
 	{ /* sentinel */ }

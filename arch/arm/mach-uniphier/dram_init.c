@@ -17,6 +17,7 @@
 #include "init.h"
 #include "sg-regs.h"
 #include "soc-info.h"
+#include "umc-memconf.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -152,6 +153,35 @@ static int uniphier_pxs2_dram_map_get(struct uniphier_dram_map dram_map[])
 	return uniphier_memconf_decode(dram_map, 0xc0000000, true);
 }
 
+static int uniphier_nx1_dram_map_get(struct uniphier_dram_map dram_map[])
+{
+	void __iomem *umc_base = (void __iomem *)0x1b807000;
+	unsigned long size;
+	u32 val;
+
+	val = readl(umc_base + UMC_MEMCONFCH);
+
+	switch (val & UMC_MEMCONFCH_SZ_MASK) {
+	case UMC_MEMCONFCH_SZ_1G:
+		size = SZ_1G;
+		break;
+	case UMC_MEMCONFCH_SZ_2G:
+		size = SZ_2G;
+		break;
+	case UMC_MEMCONFCH_SZ_4G:
+		size = SZ_4G;
+		break;
+	default:
+		pr_err("error: invalid value is set to MEMCONF size\n");
+		return -EINVAL;
+	}
+
+	dram_map[0].base = 0x20000000;
+	dram_map[0].size = size;
+
+	return 0;
+}
+
 struct uniphier_dram_init_data {
 	unsigned int soc_id;
 	int (*dram_map_get)(struct uniphier_dram_map dram_map[]);
@@ -193,6 +223,10 @@ static const struct uniphier_dram_init_data uniphier_dram_init_data[] = {
 	{
 		.soc_id = UNIPHIER_PXS3_ID,
 		.dram_map_get = uniphier_pxs2_dram_map_get,
+	},
+	{
+		.soc_id = UNIPHIER_NX1_ID,
+		.dram_map_get = uniphier_nx1_dram_map_get,
 	},
 };
 UNIPHIER_DEFINE_SOCDATA_FUNC(uniphier_get_dram_init_data,
