@@ -57,4 +57,10 @@ config PINCTRL_UNIPHIER_PXS3
 	default y
 	select PINCTRL_UNIPHIER
 
+config PINCTRL_UNIPHIER_NX1
+	bool "UniPhier NX1 SoC pinctrl driver"
+	depends on ARCH_UNIPHIER_NX1
+	default y
+	select PINCTRL_UNIPHIER
+
 endif
