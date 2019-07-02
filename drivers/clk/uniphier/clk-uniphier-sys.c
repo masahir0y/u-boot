@@ -65,3 +65,11 @@ const struct uniphier_clk_data uniphier_pxs3_sys_clk_data[] = {
 	{ /* sentinel */ }
 #endif
 };
+
+const struct uniphier_clk_data uniphier_nx1_sys_clk_data[] = {
+#if defined(CONFIG_ARCH_UNIPHIER_NX1)
+	UNIPHIER_CLK_GATE_SIMPLE(4, 0x2108, 8),		/* emmc */
+	UNIPHIER_CLK_GATE_SIMPLE(6, 0x210c, 0),		/* ether */
+	{ /* sentinel */ }
+#endif
+};

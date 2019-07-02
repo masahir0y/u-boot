@@ -19,6 +19,7 @@
 #define UNIPHIER_LD11_ID	0x31
 #define UNIPHIER_LD20_ID	0x32
 #define UNIPHIER_PXS3_ID	0x35
+#define UNIPHIER_NX1_ID		0x37
 
 unsigned int uniphier_get_soc_id(void);
 unsigned int uniphier_get_soc_model(void);
